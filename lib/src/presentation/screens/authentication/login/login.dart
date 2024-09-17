@@ -1,11 +1,83 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:resturant_side/db/DatabaseHelper.dart';
+import 'package:resturant_side/src/model/items/response.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/screens/Home/mainhome.dart';
 import 'package:resturant_side/src/presentation/widgets/widgetexporter.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
+import 'package:http/http.dart' as http;
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  Map<String, dynamic>? userData;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Check login status when app starts
+  }
+
+  final TextEditingController _emailcotroller = TextEditingController();
+  final TextEditingController _passwordcontrolle = TextEditingController();
+  final Map<String, dynamic> responseData = {};
+
+  Future<void> loginUser(String email, String password) async {
+    const String apiUri = "https://www.guildresto.com/api/login";
+
+    //API payload
+    final Map<String, dynamic> requestBody = {
+      'email': email,
+      'password': password
+    };
+    try {
+      final response = await http.post(
+        Uri.parse(apiUri),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(requestBody),
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        //print(responseData);
+
+        if (responseData.length == 1) {
+          //updateLoginStatus(false);
+        } else {
+          //updateLoginStatus(true);
+          parseData(responseData);
+        }
+      } else {
+        print("Error : ${response.statusCode}-${response.body}");
+      }
+    } catch (error) {
+      print("Error during API call : $error");
+    }
+  }
+
+  void parseData(Map<String, dynamic> responseData) {
+    print("Parse Data Function is called");
+    //Map<String, dynamic> userMap = json.decode(responseData);
+    User user = User.fromJson(responseData);
+    print('User ID =${user.id}');
+    print('User Name =${user.name}');
+    print('User Email =${user.email}');
+    print('User Phone =${user.phone}');
+    print('User Password =${user.password}');
+    print('User Role =${user.roleId}');
+    print('User Status =${user.status}');
+
+    DatabaseHelper.instance.insertUser({'userid': user.id});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,20 +98,23 @@ class Login extends StatelessWidget {
                         context: context, fontWeight: FWT.semiBold),
                   ),
                   SpaceUtils.ks65.height(),
-                  const MasterTextField(
+                  MasterTextField(
                     tittle: 'Email Address',
-                    hint: 'example@gmail.com',
+                    hint: 'Enter Email Address',
+                    controller: _emailcotroller,
                   ),
                   SpaceUtils.ks24.height(),
-                  const MasterTextField(
-                    tittle: 'Password',
-                    hint: '********************',
-                    obscureText: true
-                  ),
+                  MasterTextField(
+                      tittle: 'Password',
+                      hint: 'Enter Password',
+                      controller: _passwordcontrolle,
+                      obscureText: true),
                   SpaceUtils.ks50.height(),
                   MasterButton(
                     onTap: () {
-                      navigateToPage(context, page: const HomeMain());
+                      String email = _emailcotroller.text;
+                      String password = _passwordcontrolle.text;
+                      loginUser(email, password);
                     },
                     tittle: 'LOG IN',
                   )
