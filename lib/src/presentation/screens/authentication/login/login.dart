@@ -19,13 +19,6 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   Map<String, dynamic>? userData;
 
-  @override
-  void initState() {
-    super.initState();
-
-    // Check login status when app starts
-  }
-
   final TextEditingController _emailcotroller = TextEditingController();
   final TextEditingController _passwordcontrolle = TextEditingController();
   final Map<String, dynamic> responseData = {};
@@ -33,11 +26,19 @@ class _LoginState extends State<Login> {
   Future<void> loginUser(String email, String password) async {
     const String apiUri = "https://www.guildresto.com/api/login";
 
-    //API payload
+    // API payload
     final Map<String, dynamic> requestBody = {
-      'email': email,
-      'password': password
+      "email": email,
+      "password": password
     };
+
+    // Log received values
+    print("Received Email: $email");
+    print("Received Password: $password");
+
+    // Log the request body
+    print("Request Payload: ${jsonEncode(requestBody)}");
+
     try {
       final response = await http.post(
         Uri.parse(apiUri),
@@ -46,21 +47,20 @@ class _LoginState extends State<Login> {
         },
         body: jsonEncode(requestBody),
       );
+
+      // Check the response status code
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        //print(responseData);
+        print("Response Data: $responseData");
 
-        if (responseData.length == 1) {
-          //updateLoginStatus(false);
-        } else {
-          //updateLoginStatus(true);
+        if (responseData.length > 1) {
           parseData(responseData);
         }
       } else {
-        print("Error : ${response.statusCode}-${response.body}");
+        print("Error: ${response.statusCode} - ${response.body}");
       }
     } catch (error) {
-      print("Error during API call : $error");
+      print("Error during API call: $error");
     }
   }
 
@@ -76,7 +76,17 @@ class _LoginState extends State<Login> {
     print('User Role =${user.roleId}');
     print('User Status =${user.status}');
 
-    DatabaseHelper.instance.insertUser({'userid': user.id});
+    DatabaseHelper.instance.insertUser({
+      'userid': user.id,
+      'name': user.name,
+      'email': user.email,
+      'phone': user.phone,
+      'password': user.password,
+      'role': user.roleId,
+      'status': user.status
+    });
+
+    navigateToPage(context, page: const HomeMain());
   }
 
   @override

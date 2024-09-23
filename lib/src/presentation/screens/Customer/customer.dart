@@ -35,7 +35,13 @@ class Customers extends StatelessWidget {
         leading: CustomIconButton(
           size: 20,
           onTap: () {
-            navigateToPage(context, page: const SettingsPage());
+            navigateToPage(context,
+                page: SettingsPage(
+                  name: '',
+                  aboutus: '',
+                  address: '',
+                  thumbnail: [],
+                ));
           },
           child: SvgPicture.asset(
             IconUtil.menu,

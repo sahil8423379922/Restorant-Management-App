@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/constatns/spaces.dart';
+import 'package:resturant_side/src/presentation/screens/ResturantSettingPage/aboutrestro.dart';
 import 'package:resturant_side/src/presentation/widgets/appbar.dart';
 import 'package:resturant_side/src/presentation/widgets/masterbutton.dart';
 import 'package:resturant_side/src/presentation/widgets/mastertextfield.dart';
@@ -11,9 +12,24 @@ import 'package:resturant_side/src/repository/itemrepo.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
-class RestaurantSetting extends StatelessWidget {
-  const RestaurantSetting({Key? key}) : super(key: key);
+class RestaurantSetting extends StatefulWidget {
+  final String about;
+  final String name;
+  final String address;
+  final List<String> thumbnail;
+  const RestaurantSetting(
+      {Key? key,
+      required this.about,
+      required this.name,
+      required this.address,
+      required this.thumbnail})
+      : super(key: key);
 
+  @override
+  State<RestaurantSetting> createState() => _RestaurantSettingState();
+}
+
+class _RestaurantSettingState extends State<RestaurantSetting> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +41,7 @@ class RestaurantSetting extends StatelessWidget {
             onTap: () {
               popToTheHome(context);
             },
-            tittle: 'Save'),
+            tittle: 'Close'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -53,7 +69,11 @@ class RestaurantSetting extends StatelessWidget {
                       Positioned(
                           width: MediaQuery.of(context).size.width,
                           bottom: 0,
-                          child: const RestaurantInfo()),
+                          child: RestaurantInfo(
+                              thumbnail: widget.thumbnail,
+                              address: widget.address,
+                              name: widget.name,
+                              aboutus: widget.about)),
                     ],
                   ),
                 ),
@@ -78,19 +98,19 @@ class RestaurantSetting extends StatelessWidget {
                           (index % 10 == 0) ? 2 : 1)),
                 ),
                 SpaceUtils.ks16.height(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      const MasterTextField(tittle: 'Facebook Link'),
-                      SpaceUtils.ks18.height(),
-                      const MasterTextField(tittle: 'Instagram Link'),
-                      SpaceUtils.ks18.height(),
-                      const MasterTextField(tittle: 'Twitter Link'),
-                      SpaceUtils.ks30.height(),
-                    ],
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 24),
+                //   child: Column(
+                //     children: [
+                //       const MasterTextField(tittle: 'Facebook Link'),
+                //       SpaceUtils.ks18.height(),
+                //       const MasterTextField(tittle: 'Instagram Link'),
+                //       SpaceUtils.ks18.height(),
+                //       const MasterTextField(tittle: 'Twitter Link'),
+                //       SpaceUtils.ks30.height(),
+                //     ],
+                //   ),
+                // ),
                 SpaceUtils.ks30.height()
               ],
             ),
@@ -101,11 +121,25 @@ class RestaurantSetting extends StatelessWidget {
   }
 }
 
-class RestaurantInfo extends StatelessWidget {
-  const RestaurantInfo({
-    Key? key,
-  }) : super(key: key);
+class RestaurantInfo extends StatefulWidget {
+  final String name;
+  final String aboutus;
+  final List<String> thumbnail;
+  final String address;
 
+  const RestaurantInfo(
+      {Key? key,
+      required this.name,
+      required this.aboutus,
+      required this.address,
+      required this.thumbnail})
+      : super(key: key);
+
+  @override
+  State<RestaurantInfo> createState() => _RestaurantInfoState();
+}
+
+class _RestaurantInfoState extends State<RestaurantInfo> {
   @override
   Widget build(BuildContext context) {
     var isDark = Theme.of(context).brightness == Brightness.dark;
@@ -124,32 +158,37 @@ class RestaurantInfo extends StatelessWidget {
           borderRadius: BorderRadius.circular(10)),
       margin: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(children: [
-        Text("Restaurant Name",
+        Text(widget.name,
             style:
                 FontStyleUtilities.h4(context: context, fontWeight: FWT.bold)),
         SpaceUtils.ks10.height(),
-        const RestaurantStatus(),
+
+        SizedBox(
+            width: double.infinity,
+            height: 45,
+            child: AboutRestro(para: widget.aboutus)),
+
+        //const RestaurantStatus(),
         SpaceUtils.ks16.height(),
         Text('Restaurant',
             style: FontStyleUtilities.t2(
                 context: context, fontWeight: FWT.semiBold)),
         const SizedBox(height: 4),
         Text(
-          'Address will display here',
-          style:
-              FontStyleUtilities.t2(context: context, fontWeight: FWT.semiBold),
+          widget.address,
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
-        Text('Expertise 1 . Expertise 2',
-            style:
-                FontStyleUtilities.t2(context: context, fontWeight: FWT.bold)),
+        // Text('Expertise 1 . Expertise 2',
+        //     style:
+        //         FontStyleUtilities.t2(context: context, fontWeight: FWT.bold)),
         const Spacer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: const [
             SimpleIconWrapper(name: 'Call', image: IconUtil.call),
             SimpleIconWrapper(name: 'Location', image: IconUtil.location),
-            SimpleIconWrapper(name: 'Opening', image: IconUtil.add)
+            // SimpleIconWrapper(name: 'Opening', image: IconUtil.add)
           ],
         )
       ]),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resturant_side/db/DatabaseHelper.dart';
 import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/screens/Holidays/Holidays/holidays.dart';
@@ -15,13 +16,33 @@ import 'package:resturant_side/src/presentation/widgets/widgetexporter.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  final List<String> thumbnail;
+  final String name;
+  final String aboutus;
+  final String address;
+  const SettingsPage(
+      {Key? key,
+      required this.name,
+      required this.aboutus,
+      required this.address,
+      required this.thumbnail})
+      : super(key: key);
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  Future<void> deleteAllUsers() async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    await db.delete('users');
+    List<Map<String, dynamic>> users = await DatabaseHelper.instance.getUsers();
+    if (users.isEmpty) {
+      navigateToPage(context, page: const Login());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var isDark = Theme.of(context).brightness == Brightness.dark;
@@ -45,7 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Text(
-                  'Zack Foster',
+                  widget.name,
                   style: FontStyleUtilities.h3(
                       context: context, fontWeight: FWT.bold),
                 ),
@@ -91,7 +112,13 @@ class _SettingsPageState extends State<SettingsPage> {
               SettingTile(
                   name: 'About Restaurant',
                   onTap: () {
-                    navigateToPage(context, page: const RestaurantSetting());
+                    navigateToPage(context,
+                        page: RestaurantSetting(
+                          thumbnail: widget.thumbnail,
+                          address: widget.address,
+                          name: widget.name,
+                          about: widget.aboutus,
+                        ));
                   }),
               SettingTile(
                   name: 'Holidays',
@@ -106,7 +133,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     Expanded(
                       child: MasterButton(
                         onTap: () {
-                          navigateToPage(context, page: const Login());
+                          // navigateToPage(context, page: const Login());
+                          deleteAllUsers();
                         },
                         tittle: 'LOG OUT',
                         isOutlined: true,

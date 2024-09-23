@@ -1,11 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:resturant_side/src/model/items/resturant.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:resturant_side/db/DatabaseHelper.dart';
+import 'package:http/http.dart' as http;
 import 'package:resturant_side/src/custompackge/curvednavbar/maincurved.dart';
 import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/screens/Customer/customer.dart';
 import 'package:resturant_side/src/presentation/screens/Order/order.main.dart';
+import 'package:resturant_side/src/presentation/screens/ResturantSettingPage/resturantsettingpage.dart';
 import 'package:resturant_side/src/presentation/screens/dialog/dialog.dart';
 
 import 'package:resturant_side/src/presentation/screens/items/Itemstoshow/itemscreen.dart';
@@ -22,7 +27,12 @@ class HomeMain extends StatefulWidget {
 
 class _HomeMainState extends State<HomeMain>
     with SingleTickerProviderStateMixin {
+  String resturantname = "";
+  String aboutus = "";
+  String address = "";
+  List<String> thumbnail = [];
   int selectedIndex = 0;
+
   late TabController _controller;
   @override
   void initState() {
@@ -30,7 +40,100 @@ class _HomeMainState extends State<HomeMain>
       vsync: this,
       length: 5,
     );
+    fetchrestro('34');
     super.initState();
+  }
+
+  Future<void> fetchrestro(String id) async {
+    const String apiUri = "https://www.guildresto.com/api/restaurant";
+
+    // API payload
+    final Map<String, dynamic> requestBody = {
+      "id": "34",
+    };
+
+    // Log received values
+    print("Received ID: $id");
+
+    // Log the request body
+    print("Request Payload: ${jsonEncode(requestBody)}");
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUri),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      // Check the response status code
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        print("Response Data: $responseData");
+
+        if (responseData.length > 1) {
+          parseData(responseData);
+        }
+      } else {
+        print("Error: ${response.statusCode} - ${response.body}");
+      }
+    } catch (error) {
+      print("Error during API call: $error");
+    }
+  }
+
+  void parseData(Map<String, dynamic> responseData) {
+    print("Parse Data Function is called");
+
+    Restaurant resturant = Restaurant.fromJson(responseData);
+    print('ID =${resturant.id}');
+    setState(() {
+      resturantname = resturant.name!;
+      aboutus = resturant.aboutUs!;
+      address = resturant.address!;
+      thumbnail = resturant.thumbnail!;
+    });
+    print('Name =${resturant.name}');
+    print('About =${resturant.aboutUs}');
+    print('Cusine =${resturant.cuisine}');
+    print('Address =${resturant.address}');
+    print('Phone =${resturant.phone}');
+    print('Schedule =${resturant.schedule}');
+    print('Owner ID =${resturant.ownerId}');
+    print('Owner Email =${resturant.ownerEmail}');
+    print('Owner phone =${resturant.ownerPhone}');
+    print('Schedule =${resturant.schedule}');
+    print('Thumbnail  =${resturant.thumbnail}');
+    print('ResturantThumbnail  =${resturant.restaurantThumbnail}');
+    print('AboutusThumbnail  =${resturant.aboutUsThumbnail}');
+    print('Delivery Charge  =${resturant.deliveryCharge}');
+    print('Maximum Delivery  =${resturant.maximumTimeToDeliver}');
+    print('Gallery  =${resturant.gallery}');
+    print('Latitude  =${resturant.latitude}');
+    print('Logitude  =${resturant.longitude}');
+    print('Seo Tags  =${resturant.seoTags}');
+    print('Seo Description  =${resturant.seoDescription}');
+    print('Status  =${resturant.status}');
+    print('Slug  =${resturant.slug}');
+    print('Created At  =${resturant.createdAt}');
+    print('Updated At  =${resturant.updatedAt}');
+    print('Website  =${resturant.website}');
+    print('Theme  =${resturant.theme}');
+    print('Rating  =${resturant.rating}');
+    print('Support Pickup Order  =${resturant.supportPickupOrder}');
+    print('Show Slider  =${resturant.showSlider}');
+    print('Section ID  =${resturant.sectionId}');
+    print('Video Feature  =${resturant.videoFeature}');
+    print('Slide BG Image  =${resturant.sliderBgImage}');
+    print('Reservation BG Image  =${resturant.reservationBgImage}');
+    print('Support Delivery  =${resturant.supportDelivery}');
+    print('Support Reservation  =${resturant.supportReservation}');
+    print('Returant Name Color  =${resturant.restaurantNameColor}');
+    print('Support Token  =${resturant.supportTookan}');
+    print('Owner Name  =${resturant.ownerName}');
+    print('Owner Email  =${resturant.ownerEmail}');
+    print('Owner Phone  =${resturant.ownerPhone}');
   }
 
   onTap(int i) {
@@ -40,7 +143,7 @@ class _HomeMainState extends State<HomeMain>
     // setState(() {});
   }
 
-  List<String> names = ['Table', 'Items', 'Order', 'Users', 'Stats'];
+  List<String> names = ['Home', 'Menu', 'Order', 'Booked', 'Report'];
 
   @override
   Widget build(BuildContext context) {
@@ -76,10 +179,15 @@ class _HomeMainState extends State<HomeMain>
                 controller: _controller,
                 children: [
                   TableMain(
-                      indexer: (i) {},
-                      stringify: (i) {},
-                      tabTIme: (i) {},
-                      tap: () {}),
+                    thumbnail: thumbnail,
+                    address: address,
+                    restaurantName: resturantname,
+                    indexer: (i) {},
+                    stringify: (i) {},
+                    tabTIme: (i) {},
+                    tap: () {},
+                    aboutrestro: aboutus,
+                  ),
                   const ItemScreen(),
                   OrderMain(
                       indexer: (i) {},
@@ -133,44 +241,80 @@ class _HomeMainState extends State<HomeMain>
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 5),
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    'Tables',
-                    style: FontStyleUtilities.t3(
-                        context: context,
-                        fontWeight: FWT.semiBold,
-                        fontColor: ColorUtils.kcWhite),
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        names[0],
+                        textAlign: TextAlign.center,
+                        style: FontStyleUtilities.t3(
+                            context: context,
+                            fontWeight: FWT.semiBold,
+                            fontColor: ColorUtils.kcWhite),
+                      ),
+                    ),
                   ),
-                  Text(
-                    'Items',
-                    style: FontStyleUtilities.t3(
-                        context: context,
-                        fontWeight: FWT.semiBold,
-                        fontColor: ColorUtils.kcWhite),
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        names[1],
+                        textAlign: TextAlign.center,
+                        style: FontStyleUtilities.t3(
+                            context: context,
+                            fontWeight: FWT.semiBold,
+                            fontColor: ColorUtils.kcWhite),
+                      ),
+                    ),
                   ),
-                  Text(
-                    'Order',
-                    style: FontStyleUtilities.t3(
-                        context: context,
-                        fontWeight: FWT.semiBold,
-                        fontColor: ColorUtils.kcWhite),
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        names[2],
+                        textAlign: TextAlign.center,
+                        style: FontStyleUtilities.t3(
+                            context: context,
+                            fontWeight: FWT.semiBold,
+                            fontColor: ColorUtils.kcWhite),
+                      ),
+                    ),
                   ),
-                  Text(
-                    'Customers',
-                    style: FontStyleUtilities.t3(
-                        context: context,
-                        fontWeight: FWT.semiBold,
-                        fontColor: ColorUtils.kcWhite),
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        names[3],
+                        textAlign: TextAlign.center,
+                        style: FontStyleUtilities.t3(
+                            context: context,
+                            fontWeight: FWT.semiBold,
+                            fontColor: ColorUtils.kcWhite),
+                      ),
+                    ),
                   ),
-                  Text(
-                    'Stats',
-                    style: FontStyleUtilities.t3(
-                        context: context,
-                        fontWeight: FWT.semiBold,
-                        fontColor: ColorUtils.kcWhite),
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        names[4],
+                        textAlign: TextAlign.center,
+                        style: FontStyleUtilities.t3(
+                            context: context,
+                            fontWeight: FWT.semiBold,
+                            fontColor: ColorUtils.kcWhite),
+                      ),
+                    ),
                   )
                 ],
               ),

@@ -19,10 +19,10 @@ class DatabaseHelper {
       join(await getDatabasesPath(), 'user_database.db'),
       onCreate: (db, version) {
         return db.execute(
-          'CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, userid TEXT)',
+          'CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, userid TEXT, name TEXT, email TEXT, phone TEXT, password TEXT, role TEXT, status TEXT)',
         );
       },
-      version: 1,
+      version: 2,
     );
   }
 
