@@ -11,6 +11,7 @@ import 'package:resturant_side/src/presentation/screens/authentication/login/log
 import 'package:resturant_side/src/presentation/screens/automatetiming/automatetiming.dart';
 import 'package:resturant_side/src/presentation/screens/items/additems/additem.dart';
 import 'package:resturant_side/src/presentation/screens/offers/Offers/offers.dart';
+import 'package:resturant_side/src/presentation/screens/userprofile/Userprofile.dart';
 import 'package:resturant_side/src/presentation/widgets/roletag.dart';
 import 'package:resturant_side/src/presentation/widgets/widgetexporter.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
@@ -80,34 +81,42 @@ class _SettingsPageState extends State<SettingsPage> {
                   roleName: RoleName.ADMIN,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: AddItemToggleTile(name: 'OPEN', onChange: (value) {}),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 24),
+              //   child: AddItemToggleTile(name: 'OPEN', onChange: (value) {}),
+              // ),
+              // SettingTile(
+              //     name: 'Automate Timing',
+              //     onTap: () {
+              //       navigateToPage(context, page: const AutoMateTiming());
+              //     }),
+              // SettingTile(
+              //     name: 'Offers',
+              //     onTap: () {
+              //       navigateToPage(context, page: const Offers());
+              //     }),
+              // SettingTile(
+              //     name: 'Loyalty Program',
+              //     onTap: () {
+              //       navigateToPage(context, page: const LoyaltyProgram());
+              //     }),
+              // SettingTile(
+              //     name: 'Table',
+              //     onTap: () {
+              //       navigateToPage(context, page: const Tables());
+              //     }),
+              // SettingTile(
+              //     name: 'Team',
+              //     onTap: () {
+              //       navigateToPage(context, page: const ManageTeamMember());
+              //     }),
+
               SettingTile(
-                  name: 'Automate Timing',
+                  name: 'User Profile',
                   onTap: () {
-                    navigateToPage(context, page: const AutoMateTiming());
-                  }),
-              SettingTile(
-                  name: 'Offers',
-                  onTap: () {
-                    navigateToPage(context, page: const Offers());
-                  }),
-              SettingTile(
-                  name: 'Loyalty Program',
-                  onTap: () {
-                    navigateToPage(context, page: const LoyaltyProgram());
-                  }),
-              SettingTile(
-                  name: 'Table',
-                  onTap: () {
-                    navigateToPage(context, page: const Tables());
-                  }),
-              SettingTile(
-                  name: 'Team',
-                  onTap: () {
-                    navigateToPage(context, page: const ManageTeamMember());
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => UserProfile(),
+                    ));
                   }),
               SettingTile(
                   name: 'About Restaurant',
@@ -120,11 +129,11 @@ class _SettingsPageState extends State<SettingsPage> {
                           about: widget.aboutus,
                         ));
                   }),
-              SettingTile(
-                  name: 'Holidays',
-                  onTap: () {
-                    navigateToPage(context, page: const Holidays());
-                  }),
+              // SettingTile(
+              //     name: 'Holidays',
+              //     onTap: () {
+              //       navigateToPage(context, page: const Holidays());
+              //     }),
               SpaceUtils.ks40.height(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),

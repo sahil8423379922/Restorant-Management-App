@@ -39,7 +39,7 @@ class _OrderMainState extends State<OrderMain>
     super.initState();
   }
 
-  List<String> tabs = <String>['   New  ', ' Active ', 'Completed'];
+  List<String> tabs = <String>['Current Order', 'Today Order', 'All Order'];
   List<String> times = <String>[
     '4',
     '3',
@@ -61,7 +61,7 @@ class _OrderMainState extends State<OrderMain>
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Order',
+          'Orders',
           style: FontStyleUtilities.h4(context: context, fontWeight: FWT.bold),
         ),
         centerTitle: true,
