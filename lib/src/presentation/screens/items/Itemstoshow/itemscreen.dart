@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -14,8 +16,50 @@ import 'package:resturant_side/src/repository/itemrepo.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
-class ItemScreen extends StatelessWidget {
+import '../../../../api/service/api.dart';
+
+class ItemScreen extends StatefulWidget {
   const ItemScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ItemScreen> createState() => _ItemScreenState();
+}
+
+class _ItemScreenState extends State<ItemScreen> {
+  List<dynamic> dataArray = [];
+
+  Future<void> _fetchRestaurantData() async {
+    RestaurantService _restaurantService = RestaurantService();
+
+    final menudata = await _restaurantService.fetchRestaurantMenuData('89');
+
+    if (menudata != null) {
+      setState(() {
+        dataArray = menudata['data'];
+      });
+
+      print(dataArray);
+
+      // dataArray.forEach((item) {
+      //   print("Menu Data Received = ${item}");
+      //   //print("Name of Menu = ${item['name']}");
+      // });
+    } else {
+      print("No restaurant data received");
+    }
+
+    // setState(() {
+    //   name = restuantdata.name;
+    //   resturantinfo = restuantdata;
+    // });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchRestaurantData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +70,7 @@ class ItemScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Items',
+              'Menu Item',
               style: FontStyleUtilities.h4(
                 context: context,
                 fontWeight: FWT.bold,
@@ -85,7 +129,7 @@ class ItemScreen extends StatelessWidget {
           children: [
             SpaceUtils.ks24.height(),
             Text(
-              'Lunch',
+              'Available Food Items',
               style: FontStyleUtilities.h5(
                   context: context, fontWeight: FWT.semiBold),
             ),
@@ -93,41 +137,19 @@ class ItemScreen extends StatelessWidget {
             ListView.builder(
               physics: const ClampingScrollPhysics(),
               shrinkWrap: true,
-              itemCount: 5,
+              itemCount: dataArray.length,
               itemBuilder: (BuildContext context, int index) {
                 return ItemTile(
-                  name: itmes[index].name,
+                  name: dataArray[index]['name'],
+                  restuant: dataArray[index]['restaurant_id'],
                   image: itmes[index].image,
-                  price: itmes[index].price,
+                  price: jsonDecode(dataArray[index]['price'])['menu'],
                   isVeg: itmes[index].isVeg,
                   onChange: (bool value) {},
                 );
               },
             ),
             SpaceUtils.ks30.height(),
-            Text(
-              'Drinks',
-              style: FontStyleUtilities.h5(
-                  context: context, fontWeight: FWT.semiBold),
-            ),
-            SpaceUtils.ks10.height(),
-            ListView.builder(
-              physics: const ClampingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: 5,
-              itemBuilder: (BuildContext context, int index) {
-                return ItemTile(
-                  name: itmes[index].name,
-                  image: itmes[index].image,
-                  price: itmes[index].price,
-                  isVeg: itmes[index].isVeg,
-                  onChange: (bool value) {
-                    // print('i am $index and my value is $value ');
-                  },
-                );
-              },
-            ),
-            SpaceUtils.ks75.height(),
           ],
         ),
       ),
@@ -139,13 +161,15 @@ class ItemTile extends StatefulWidget {
   const ItemTile({
     Key? key,
     required this.name,
+    required this.restuant,
     required this.image,
     required this.price,
     required this.isVeg,
     required this.onChange,
   }) : super(key: key);
   final String name, image;
-  final int price;
+  final String price, restuant;
+
   final bool isVeg;
   final ValueChanged<bool> onChange;
 
@@ -160,96 +184,102 @@ class _ItemTileState extends State<ItemTile> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       margin: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 96,
-            width: 96,
-            child: Stack(
-              children: [
-                SizedBox(
-                  height: 96,
-                  width: 96,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      widget.image,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  child: Mark(
-                    isVeg: widget.isVeg,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SpaceUtils.ks16.width(),
-          Expanded(
-              child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              SizedBox(
+                height: 96,
+                width: 96,
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      height: 96,
+                      width: 96,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(
+                          widget.image,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      child: Mark(
+                        isVeg: widget.isVeg,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SpaceUtils.ks16.width(),
+              Expanded(
+                  child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        widget.name,
-                        style: FontStyleUtilities.t2(
-                            context: context, fontWeight: FWT.semiBold),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.name,
+                            style: FontStyleUtilities.t2(
+                                context: context, fontWeight: FWT.semiBold),
+                          ),
+                          Text("Resturant ID : ${widget.restuant} "),
+                          Text(
+                            '\$${widget.price}',
+                            style: FontStyleUtilities.t2(
+                                context: context, fontWeight: FWT.semiBold),
+                          ),
+                          SpaceUtils.ks30.height(),
+                        ],
                       ),
-                      Text(
-                        '\$${widget.price}',
-                        style: FontStyleUtilities.t2(
-                            context: context, fontWeight: FWT.semiBold),
-                      ),
-                      SpaceUtils.ks30.height(),
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     navigateToPage(context,
+                      //         page: EditItem(
+                      //           image: widget.image,
+                      //         ));
+                      //   },
+                      //   child: Container(
+                      //     alignment: Alignment.center,
+                      //     height: 25,
+                      //     width: 56,
+                      //     decoration: BoxDecoration(
+                      //         borderRadius: BorderRadius.circular(4),
+                      //         color: ColorUtils.kcBlueButton),
+                      //     child: Text(
+                      //       'Edit',
+                      //       style: FontStyleUtilities.t2(
+                      //           context: context,
+                      //           fontWeight: FWT.semiBold,
+                      //           fontColor: ColorUtils.kcWhite),
+                      //     ),
+                      //   ),
+                      // )
                     ],
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      navigateToPage(context,
-                          page: EditItem(
-                            image: widget.image,
-                          ));
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      height: 25,
-                      width: 56,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          color: ColorUtils.kcBlueButton),
-                      child: Text(
-                        'Edit',
-                        style: FontStyleUtilities.t2(
-                            context: context,
-                            fontWeight: FWT.semiBold,
-                            fontColor: ColorUtils.kcWhite),
-                      ),
-                    ),
-                  )
+                  // Switch(
+                  //     activeColor: ColorUtils.kcPrimary,
+                  //     value: isSelect,
+                  //     onChanged: (val) {
+                  //       isSelect = val;
+                  //       widget.onChange(val);
+                  //       setState(() {});
+                  //     })
                 ],
-              ),
-              Switch(
-                  activeColor: ColorUtils.kcPrimary,
-                  value: isSelect,
-                  onChanged: (val) {
-                    isSelect = val;
-                    widget.onChange(val);
-                    setState(() {});
-                  })
+              ))
             ],
-          ))
-        ],
+          ),
+        ),
       ),
     );
   }

@@ -16,6 +16,9 @@ import 'package:resturant_side/src/presentation/widgets/roletag.dart';
 import 'package:resturant_side/src/presentation/widgets/widgetexporter.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
+import '../../../api/model/parsedjson.dart';
+import '../../../api/service/api.dart';
+
 class SettingsPage extends StatefulWidget {
   final List<String> thumbnail;
   final String name;
@@ -34,6 +37,26 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  late final resturantinfo;
+  var name = '';
+
+  RestaurantService _restaurantService = RestaurantService();
+
+  Future<void> _fetchRestaurantData() async {
+    final restuantdata = await _restaurantService.fetchRestaurantData();
+
+    if (restuantdata != null) {
+      print("Name of the restaurant = ${restuantdata.name}");
+    } else {
+      print("No restaurant data received");
+    }
+
+    setState(() {
+      name = restuantdata.name;
+      resturantinfo = restuantdata;
+    });
+  }
+
   Future<void> deleteAllUsers() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
@@ -42,6 +65,13 @@ class _SettingsPageState extends State<SettingsPage> {
     if (users.isEmpty) {
       navigateToPage(context, page: const Login());
     }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchRestaurantData();
   }
 
   @override
@@ -67,7 +97,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Text(
-                  widget.name,
+                  name,
                   style: FontStyleUtilities.h3(
                       context: context, fontWeight: FWT.bold),
                 ),
@@ -122,12 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   name: 'About Restaurant',
                   onTap: () {
                     navigateToPage(context,
-                        page: RestaurantSetting(
-                          thumbnail: widget.thumbnail,
-                          address: widget.address,
-                          name: widget.name,
-                          about: widget.aboutus,
-                        ));
+                        page: RestaurantSetting(resturantinfo: resturantinfo));
                   }),
               // SettingTile(
               //     name: 'Holidays',

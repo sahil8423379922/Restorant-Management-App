@@ -13,17 +13,11 @@ import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
 class RestaurantSetting extends StatefulWidget {
-  final String about;
-  final String name;
-  final String address;
-  final List<String> thumbnail;
-  const RestaurantSetting(
-      {Key? key,
-      required this.about,
-      required this.name,
-      required this.address,
-      required this.thumbnail})
-      : super(key: key);
+  final resturantinfo;
+  const RestaurantSetting({
+    Key? key,
+    this.resturantinfo,
+  }) : super(key: key);
 
   @override
   State<RestaurantSetting> createState() => _RestaurantSettingState();
@@ -70,10 +64,7 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
                           width: MediaQuery.of(context).size.width,
                           bottom: 0,
                           child: RestaurantInfo(
-                              thumbnail: widget.thumbnail,
-                              address: widget.address,
-                              name: widget.name,
-                              aboutus: widget.about)),
+                              resturantinfo: widget.resturantinfo)),
                     ],
                   ),
                 ),
@@ -122,18 +113,11 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
 }
 
 class RestaurantInfo extends StatefulWidget {
-  final String name;
-  final String aboutus;
-  final List<String> thumbnail;
-  final String address;
-
-  const RestaurantInfo(
-      {Key? key,
-      required this.name,
-      required this.aboutus,
-      required this.address,
-      required this.thumbnail})
-      : super(key: key);
+  final resturantinfo;
+  const RestaurantInfo({
+    Key? key,
+    this.resturantinfo,
+  }) : super(key: key);
 
   @override
   State<RestaurantInfo> createState() => _RestaurantInfoState();
@@ -158,7 +142,7 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
           borderRadius: BorderRadius.circular(10)),
       margin: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(children: [
-        Text(widget.name,
+        Text(widget.resturantinfo.name,
             style:
                 FontStyleUtilities.h4(context: context, fontWeight: FWT.bold)),
         SpaceUtils.ks10.height(),
@@ -166,7 +150,7 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
         SizedBox(
             width: double.infinity,
             height: 45,
-            child: AboutRestro(para: widget.aboutus)),
+            child: AboutRestro(para: widget.resturantinfo.aboutUs)),
 
         //const RestaurantStatus(),
         SpaceUtils.ks16.height(),
@@ -175,7 +159,7 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
                 context: context, fontWeight: FWT.semiBold)),
         const SizedBox(height: 4),
         Text(
-          widget.address,
+          widget.resturantinfo.address,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
