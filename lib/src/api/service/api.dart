@@ -68,7 +68,7 @@ class RestaurantService {
   // Function to fetch restaurant details
   fetchRestaurantMenu(String id) async {
     final Map<String, dynamic> requestBody = {
-      "id": id, // Dynamically pass the ID
+      "resid": id, // Dynamically pass the ID
     };
 
     print("Received ID: $id");
@@ -84,8 +84,8 @@ class RestaurantService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        // print("Response Data: $responseData");
+        final List<dynamic> responseData = jsonDecode(response.body);
+        print("Response Data: $responseData");
 
         if (responseData.isNotEmpty) {
           // Parse the response data into a Restaurant model

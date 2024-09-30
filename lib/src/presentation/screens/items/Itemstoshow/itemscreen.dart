@@ -31,11 +31,14 @@ class _ItemScreenState extends State<ItemScreen> {
   Future<void> _fetchRestaurantData() async {
     RestaurantService _restaurantService = RestaurantService();
 
-    final menudata = await _restaurantService.fetchRestaurantMenuData('89');
+    final menudata = await _restaurantService.fetchRestaurantMenuData('88');
 
     if (menudata != null) {
+
+      print("Current response $menudata");
       setState(() {
-        dataArray = menudata['data'];
+        dataArray = menudata;
+        print(menudata);
       });
 
       print(dataArray);
