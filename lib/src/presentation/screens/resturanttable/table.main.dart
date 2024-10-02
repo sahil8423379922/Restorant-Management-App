@@ -120,10 +120,6 @@ class _TableMainState extends State<TableMain>
           onTap: () {
             navigateToPage(context,
                 page: SettingsPage(
-                  thumbnail: widget.thumbnail,
-                  address: widget.address,
-                  name: widget.restaurantName,
-                  aboutus: widget.aboutrestro,
                 ));
           },
           child: SvgPicture.asset(

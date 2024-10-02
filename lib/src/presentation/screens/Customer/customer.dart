@@ -37,10 +37,7 @@ class Customers extends StatelessWidget {
             onTap: () {
               navigateToPage(context,
                   page: SettingsPage(
-                    name: '',
-                    aboutus: '',
-                    address: '',
-                    thumbnail: [],
+                
                   ));
             },
             child: SvgPicture.asset(

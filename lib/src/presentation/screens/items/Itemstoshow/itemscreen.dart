@@ -16,6 +16,7 @@ import 'package:resturant_side/src/repository/itemrepo.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
+import '../../../../../db/DatabaseHelper.dart';
 import '../../../../api/service/api.dart';
 
 class ItemScreen extends StatefulWidget {
@@ -27,11 +28,26 @@ class ItemScreen extends StatefulWidget {
 
 class _ItemScreenState extends State<ItemScreen> {
   List<dynamic> dataArray = [];
+   RestaurantService _restaurantService = RestaurantService();
 
-  Future<void> _fetchRestaurantData() async {
-    RestaurantService _restaurantService = RestaurantService();
 
-    final menudata = await _restaurantService.fetchRestaurantMenuData('88');
+   Future<void> check_user_already_logged_in() async {
+    List<Map<String, dynamic>> users = await DatabaseHelper.instance.getUsers();
+     print('Data Received = $users');
+    print(users[0]['userid']);
+
+    setState(() {
+      _fetchRestaurant(users[0]['userid']);
+    });
+  }
+
+  
+
+  Future<void> _fetchRestaurantData(String id) async {
+   
+
+    final menudata = await _restaurantService.fetchRestaurantMenuData(id);
+    final restoid ="";
 
     if (menudata != null) {
 
@@ -57,11 +73,31 @@ class _ItemScreenState extends State<ItemScreen> {
     // });
   }
 
+  Future<void> _fetchRestaurant(String userid) async {
+    final restuantdata = await _restaurantService.fetchRestaurantData(userid);
+
+    if (restuantdata != null) {
+
+      var id =restuantdata.id!;
+
+_fetchRestaurantData(id);
+
+      print(restuantdata.id);
+    } else {
+      print("No restaurant data received");
+    }
+
+  
+  }
+
+  
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _fetchRestaurantData();
+   
+    check_user_already_logged_in();
   }
 
   @override
@@ -80,17 +116,17 @@ class _ItemScreenState extends State<ItemScreen> {
               ),
             ),
             SpaceUtils.ks10.width(),
-            GestureDetector(
-              onTap: () {
-                navigateToPage(context, page: const AddItem());
-              },
-              child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor:
-                      isDark ? ColorUtils.kcBlueButton : ColorUtils.kcBlack,
-                  child: Icon(Icons.add),
-                  foregroundColor: ColorUtils.kcWhite),
-            )
+            // GestureDetector(
+            //   onTap: () {
+            //     navigateToPage(context, page: const AddItem());
+            //   },
+            //   child: CircleAvatar(
+            //       radius: 18,
+            //       backgroundColor:
+            //           isDark ? ColorUtils.kcBlueButton : ColorUtils.kcBlack,
+            //       child: Icon(Icons.add),
+            //       foregroundColor: ColorUtils.kcWhite),
+            // )
           ],
         ),
         centerTitle: true,
@@ -110,10 +146,7 @@ class _ItemScreenState extends State<ItemScreen> {
           onTap: () {
             navigateToPage(context,
                 page: SettingsPage(
-                  name: '',
-                  aboutus: '',
-                  address: '',
-                  thumbnail: [],
+                 
                 ));
           },
           child: SvgPicture.asset(
@@ -142,8 +175,12 @@ class _ItemScreenState extends State<ItemScreen> {
               shrinkWrap: true,
               itemCount: dataArray.length,
               itemBuilder: (BuildContext context, int index) {
-                return ItemTile(
-                  name: dataArray[index]['name'],
+                return 
+                
+                ItemTile(
+                  name: (dataArray[index]['name'] ?? '').length > 20 
+      ? (dataArray[index]['name'] ?? '').substring(0, 20) + '...' 
+      : dataArray[index]['name'] ?? '',
                   restuant: dataArray[index]['restaurant_id'],
                   image: itmes[index].image,
                   price: jsonDecode(dataArray[index]['price'])['menu'],

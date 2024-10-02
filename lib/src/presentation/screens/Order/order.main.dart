@@ -39,7 +39,7 @@ class _OrderMainState extends State<OrderMain>
     super.initState();
   }
 
-  List<String> tabs = <String>['Current Order', 'Today Order', 'All Order'];
+  List<String> tabs = <String>['Pending Order', 'Approved Order', 'Delivered Order'];
   List<String> times = <String>[
     '4',
     '3',
@@ -81,10 +81,7 @@ class _OrderMainState extends State<OrderMain>
           onTap: () {
             navigateToPage(context,
                 page: SettingsPage(
-                  name: '',
-                  aboutus: '',
-                  address: '',
-                  thumbnail: [],
+                 
                 ));
           },
           child: SvgPicture.asset(
@@ -106,7 +103,7 @@ class _OrderMainState extends State<OrderMain>
                     ColorUtils.kcTransparent.withOpacity(.008),
                   ])),
               padding: const EdgeInsets.only(top: 24, bottom: 12),
-              height: 100,
+              height: 80,
               child: TabBar(
                 onTap: (int index) {
                   selextedTab = index;
@@ -126,14 +123,14 @@ class _OrderMainState extends State<OrderMain>
                     .map((e) => SizedBox(
                           child: Column(
                             children: [
-                              Text(
-                                "${e.length + 1}",
-                                style: const TextStyle(
-                                  fontFamily: 'Sands',
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                              // Text(
+                              //   "${e.length + 1}",
+                              //   style: const TextStyle(
+                              //     fontFamily: 'Sands',
+                              //     fontSize: 28,
+                              //     fontWeight: FontWeight.w700,
+                              //   ),
+                              // ),
                               Text(
                                 e,
                                 style: const TextStyle(

@@ -51,10 +51,8 @@ class _StatsState extends State<Stats> {
           onTap: () {
             navigateToPage(context,
                 page: SettingsPage(
-                  name: '',
-                  aboutus: '',
-                  address: '',
-                  thumbnail: [],
+               
+                 
                 ));
           },
           child: SvgPicture.asset(

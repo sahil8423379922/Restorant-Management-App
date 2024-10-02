@@ -6,6 +6,8 @@ import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/widgets/tagwidget.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 
+import '../../../../api/service/api.dart';
+
 class Active extends StatefulWidget {
   const Active({Key? key}) : super(key: key);
 
@@ -14,6 +16,47 @@ class Active extends StatefulWidget {
 }
 
 class _ActiveState extends State<Active> {
+   List<dynamic> dataArray = [];
+
+//fetching approved order
+Future<void> _fetchApprovedOrder() async {
+  
+    RestaurantService _restaurantService = RestaurantService();
+
+    final menuData = await _restaurantService.fetchApprovedOrders("88");
+
+    if (menuData != null) {
+      print("Current response $menuData");
+
+      final filteredData = menuData.where((order) {
+      return order.length == 26; // Only keep objects with exactly 26 key-value pairs
+    }).toList();
+
+
+    
+
+
+
+      // setState(() {
+      //   dataArray = filteredData;
+      // });
+
+      // Fetch details for each order once
+      // for (var order in menuData) {
+      //   await _fetchingOrderDetails(order['code']);
+      // }
+    } else {
+      print("No restaurant data received");
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchApprovedOrder();
+  }
+
   @override
   Widget build(BuildContext context) {
     var isDark = Theme.of(context).brightness == Brightness.dark;
@@ -22,7 +65,7 @@ class _ActiveState extends State<Active> {
       child: Column(
         children: [
           ListView.builder(
-            itemCount: 3,
+            itemCount:dataArray.length ,
             physics: const ClampingScrollPhysics(),
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {

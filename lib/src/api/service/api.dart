@@ -6,38 +6,25 @@ import '../model/parsedjson.dart';
 // Import your Restaurant model
 
 class RestaurantService {
-  // Base API URL
+  // Base API URLs
   final String apiUri = "https://www.guildresto.com/api/restaurant";
+  final String apiMenuUri = "https://www.guildresto.com/api/menu";
+  final String apiPendingOrderUri = "https://www.guildresto.com/api/pending";
+  final String apiMenuDetailsUri = "https://www.guildresto.com/api/menudetails";
+  final String apiApprovedOrderUri = "https://www.guildresto.com/api/approved";
+  final String apiOrderDetailsUri = "https://www.guildresto.com/api/orderdetails";
 
-  // Function to fetch restaurant details
-  fetchRestaurant(String id) async {
-    final Map<String, dynamic> requestBody = {
-      "id": id, // Dynamically pass the ID
-    };
-
-    print("Received ID: $id");
-    print("Request Payload: ${jsonEncode(requestBody)}");
-
+  // Generic API call function
+  Future<dynamic> _apiCall(String uri, Map<String, dynamic> requestBody) async {
     try {
       final response = await http.post(
-        Uri.parse(apiUri),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        Uri.parse(uri),
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        print("Response Data: $responseData");
-
-        if (responseData.isNotEmpty) {
-          // Parse the response data into a Restaurant model
-          return responseData;
-        } else {
-          print("No data found");
-          return null;
-        }
+        return jsonDecode(response.body);
       } else {
         print("Error: ${response.statusCode} - ${response.body}");
         return null;
@@ -48,73 +35,61 @@ class RestaurantService {
     }
   }
 
-  fetchRestaurantData() async {
-    // Replace '34' with the dynamic ID you want to pass
-    final fetchedRestaurant = await fetchRestaurant('34');
-    Restaurant resturant = Restaurant.fromJson(fetchedRestaurant);
+  // Fetch restaurant details
+  Future<dynamic> fetchRestaurant(String id) async {
+    final Map<String, dynamic> requestBody = {"id": id};
+    print("Received ID: $id");
+    return await _apiCall(apiUri, requestBody);
+  }
 
+  // Fetch restaurant data
+  Future<Restaurant?> fetchRestaurantData(String resId) async {
+    final fetchedRestaurant = await fetchRestaurant(resId);
     if (fetchedRestaurant != null) {
-      // No need to call fromJson again
-      print("Name of the restaurant = ${resturant.name}");
-      return resturant;
+      return Restaurant.fromJson(fetchedRestaurant);
     } else {
       print("No restaurant data received");
-    }
-  }
-
-  //Fetching Resturant menu
-  final String api_menu_Uri = "https://www.guildresto.com/api/menu";
-
-  // Function to fetch restaurant details
-  fetchRestaurantMenu(String id) async {
-    final Map<String, dynamic> requestBody = {
-      "resid": id, // Dynamically pass the ID
-    };
-
-    print("Received ID: $id");
-    print("Request Payload: ${jsonEncode(requestBody)}");
-
-    try {
-      final response = await http.post(
-        Uri.parse(api_menu_Uri),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(requestBody),
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> responseData = jsonDecode(response.body);
-        print("Response Data: $responseData");
-
-        if (responseData.isNotEmpty) {
-          // Parse the response data into a Restaurant model
-          return responseData;
-        } else {
-          print("No data found");
-          return null;
-        }
-      } else {
-        print("Error: ${response.statusCode} - ${response.body}");
-        return null;
-      }
-    } catch (error) {
-      print("Error during API call: $error");
       return null;
     }
   }
 
-  //resturant menu driver
-  fetchRestaurantMenuData(String res_id) async {
-    final resturantMenu = await fetchRestaurantMenu(res_id);
+  // Fetch restaurant menu
+  Future<List<dynamic>> fetchRestaurantMenu(String id) async {
+    final Map<String, dynamic> requestBody = {"resid": id};
+    print("Received ID: $id");
+    return await _apiCall(apiMenuUri, requestBody);
+  }
 
-    if (resturantMenu != null) {
-      // Accessing the data array
-      // Extracting the data array
+  // Fetch restaurant menu data
+  Future<List<dynamic>?> fetchRestaurantMenuData(String resId) async {
+    return await fetchRestaurantMenu(resId);
+  }
 
-      return resturantMenu;
-    } else {
-      print("No restaurant data received");
-    }
+  // Fetch pending orders
+  Future<List<dynamic>?> fetchPendingOrders(String id) async {
+    final Map<String, dynamic> requestBody = {"resid": id};
+    print("Received ID: $id");
+    return await _apiCall(apiPendingOrderUri, requestBody);
+  }
+
+  // Fetch menu details
+  Future<dynamic> fetchMenuDetails(String id) async {
+    final Map<String, dynamic> requestBody = {"menuid": id};
+    print("Received ID: $id");
+    return await _apiCall(apiMenuDetailsUri, requestBody);
+  }
+
+  // Fetch approved orders
+  Future<List<dynamic>?> fetchApprovedOrders(String id) async {
+    final Map<String, dynamic> requestBody = {"resid": id};
+    print("Received ID: $id");
+    return await _apiCall(apiApprovedOrderUri, requestBody);
+  }
+
+  // Fetch order details
+  Future<List<dynamic>?> fetchOrderDetails(String id) async {
+    final Map<String, dynamic> requestBody = {"orderid": id};
+    print("Received ID: $id");
+    return await _apiCall(apiOrderDetailsUri, requestBody);
   }
 }

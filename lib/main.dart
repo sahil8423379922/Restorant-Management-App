@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:resturant_side/db/DatabaseHelper.dart';
+import 'package:resturant_side/db/ResturantDB.dart';
+import 'package:resturant_side/src/api/service/api.dart';
 import 'package:resturant_side/src/presentation/screens/Home/mainhome.dart';
 import 'package:resturant_side/src/presentation/screens/authentication/login/login.dart';
 import 'package:provider/provider.dart';
@@ -21,11 +23,21 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     check_user_already_logged_in();
+  }
+
+  
+
+
+
+  void insertResturantData(){
+   
   }
 
   bool state = false;
@@ -35,6 +47,7 @@ class _MyAppState extends State<MyApp> {
     if (users.length > 0) {
       setState(() {
         state = true;
+        
       });
     }
   }

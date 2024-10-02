@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:resturant_side/db/DatabaseHelper.dart';
+import 'package:resturant_side/db/ResturantDB.dart';
+import 'package:resturant_side/src/api/service/api.dart';
 import 'package:resturant_side/src/model/items/response.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/screens/Home/mainhome.dart';
@@ -22,6 +24,8 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailcotroller = TextEditingController();
   final TextEditingController _passwordcontrolle = TextEditingController();
   final Map<String, dynamic> responseData = {};
+  RestaurantService _restaurantService = RestaurantService();
+  var userid = "";
 
   Future<void> loginUser(String email, String password) async {
     const String apiUri = "https://www.guildresto.com/api/login";
@@ -86,7 +90,33 @@ class _LoginState extends State<Login> {
       'status': user.status
     });
 
+    _fetchRestaurantData(user.id);
+
     navigateToPage(context, page: const HomeMain());
+  }
+
+  Future<void> _fetchRestaurantData(String userid) async {
+    final restuantdata = await _restaurantService.fetchRestaurantData(userid);
+
+    if (restuantdata != null) {
+      print("Name of the restaurant = ${restuantdata.name}");
+      ResturantHelper.instance.insertDetails({
+        'resid': restuantdata.id,
+        'name': restuantdata.name,
+        'aboutus': restuantdata.aboutUs,
+        'address': restuantdata.address,
+        'phone': restuantdata.phone,
+        'ownerid': restuantdata.ownerId,
+        'latitude': restuantdata.latitude,
+        'longitude': restuantdata.longitude,
+        'website': restuantdata.website,
+        'ownername': restuantdata.ownerId,
+        'ownerphone': restuantdata.ownerId,
+        'owneremail': restuantdata.ownerId
+      });
+    } else {
+      print("No restaurant data received");
+    }
   }
 
   @override

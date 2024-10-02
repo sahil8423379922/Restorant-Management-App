@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resturant_side/db/DatabaseHelper.dart';
+import 'package:resturant_side/db/ResturantDB.dart';
 import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/screens/Holidays/Holidays/holidays.dart';
@@ -20,16 +21,10 @@ import '../../../api/model/parsedjson.dart';
 import '../../../api/service/api.dart';
 
 class SettingsPage extends StatefulWidget {
-  final List<String> thumbnail;
-  final String name;
-  final String aboutus;
-  final String address;
+  
   const SettingsPage(
       {Key? key,
-      required this.name,
-      required this.aboutus,
-      required this.address,
-      required this.thumbnail})
+     })
       : super(key: key);
 
   @override
@@ -39,30 +34,46 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late final resturantinfo;
   var name = '';
+  var userid="";
 
   RestaurantService _restaurantService = RestaurantService();
 
   Future<void> _fetchRestaurantData() async {
-    final restuantdata = await _restaurantService.fetchRestaurantData();
 
-    if (restuantdata != null) {
-      print("Name of the restaurant = ${restuantdata.name}");
-    } else {
-      print("No restaurant data received");
-    }
+    List<Map<String, dynamic>> resturant= await ResturantHelper.instance.getDetails();
+    print("Data Received from the DB 2 $resturant");
+    setState(() {
+      name = resturant[0]['name'];
+    });
+    
+  }
+
+
+  Future<void> check_user_already_logged_in() async {
+    List<Map<String, dynamic>> users = await DatabaseHelper.instance.getUsers();
+     print('Data Received = $users');
+    print(users[0]['userid']);
 
     setState(() {
-      name = restuantdata.name;
-      resturantinfo = restuantdata;
+      _fetchRestaurantData();
     });
   }
 
+ 
+
   Future<void> deleteAllUsers() async {
     final dbHelper = DatabaseHelper.instance;
+    final resturantHelper =ResturantHelper.instance;
+
     final db = await dbHelper.database;
+    final rdb = await resturantHelper.database;
+
+    await rdb.delete('resturant');
     await db.delete('users');
+
     List<Map<String, dynamic>> users = await DatabaseHelper.instance.getUsers();
-    if (users.isEmpty) {
+    List<Map<String, dynamic>> resturant = await ResturantHelper.instance.getDetails();
+    if (users.isEmpty && resturant.isEmpty) {
       navigateToPage(context, page: const Login());
     }
   }
@@ -72,6 +83,8 @@ class _SettingsPageState extends State<SettingsPage> {
     // TODO: implement initState
     super.initState();
     _fetchRestaurantData();
+    check_user_already_logged_in();
+    
   }
 
   @override
