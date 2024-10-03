@@ -8,6 +8,7 @@ import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../db/DatabaseHelper.dart';
+import '../../../../../db/ResturantDB.dart';
 
 class New extends StatefulWidget {
   const New({Key? key}) : super(key: key);
@@ -23,33 +24,22 @@ class _NewState extends State<New> {
   var restoid = "";
   bool isLoading = true; // Add this to track loading state
 
-  Future<void> _fetchRestaurant(String userid) async {
-    final restuantdata = await _restaurantService.fetchRestaurantData(userid);
+  Future<void> _fetchRestaurantData() async {
+    List<Map<String, dynamic>> resturant =
+        await ResturantHelper.instance.getDetails();
+    print("Data Received from the DB 2 $resturant");
 
-    if (restuantdata != null) {
-      var id = restuantdata.id!;
-
+    if (resturant != null) {
       setState(() {
+        var id = resturant[0]['resid'];
         _fetchPendingOrder(id);
       });
-
-      print(restuantdata.id);
     } else {
       setState(() {
         isLoading = false; // Stop loading if no restaurant data
       });
       print("No restaurant data received");
     }
-  }
-
-  Future<void> check_user_already_logged_in() async {
-    List<Map<String, dynamic>> users = await DatabaseHelper.instance.getUsers();
-    print('Data Received = $users');
-    print(users[0]['userid']);
-
-    setState(() {
-      _fetchRestaurant(users[0]['userid']);
-    });
   }
 
   Future<void> _fetchPendingOrder(String id) async {
@@ -104,7 +94,7 @@ class _NewState extends State<New> {
   @override
   void initState() {
     super.initState();
-    check_user_already_logged_in();
+    _fetchRestaurantData();
   }
 
   @override
@@ -158,11 +148,14 @@ class _NewState extends State<New> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
+                                
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                          Text(dataArray[index]['menuname'],style: TextStyle(fontSize:22,fontWeight: FontWeight.bold),),
+                                           SpaceUtils.ks8.height(),
                                         Text(
                                           "Name: " +
                                               dataArray[index]['customer_name'],

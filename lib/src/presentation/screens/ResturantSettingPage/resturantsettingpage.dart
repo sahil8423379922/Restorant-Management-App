@@ -12,11 +12,13 @@ import 'package:resturant_side/src/repository/itemrepo.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
+import '../../../../db/ResturantDB.dart';
+
 class RestaurantSetting extends StatefulWidget {
-  final resturantinfo;
+  
   const RestaurantSetting({
     Key? key,
-    this.resturantinfo,
+   
   }) : super(key: key);
 
   @override
@@ -24,6 +26,11 @@ class RestaurantSetting extends StatefulWidget {
 }
 
 class _RestaurantSettingState extends State<RestaurantSetting> {
+
+ 
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +71,7 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
                           width: MediaQuery.of(context).size.width,
                           bottom: 0,
                           child: RestaurantInfo(
-                              resturantinfo: widget.resturantinfo)),
+                             )),
                     ],
                   ),
                 ),
@@ -113,10 +120,10 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
 }
 
 class RestaurantInfo extends StatefulWidget {
-  final resturantinfo;
+  
   const RestaurantInfo({
     Key? key,
-    this.resturantinfo,
+    
   }) : super(key: key);
 
   @override
@@ -124,6 +131,36 @@ class RestaurantInfo extends StatefulWidget {
 }
 
 class _RestaurantInfoState extends State<RestaurantInfo> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchRestaurantData();
+  }
+
+  var name ="";
+  var aboutresto ="";
+  var restoadddress ="";
+  var phoone ="";
+
+
+   Future<void> _fetchRestaurantData() async {
+    List<Map<String, dynamic>> resturant =
+        await ResturantHelper.instance.getDetails();
+    print("Data Received from the DB 2 $resturant");
+
+    setState(() {
+      aboutresto =resturant[0]['aboutus'];
+      restoadddress =resturant[0]['address'];
+      phoone =resturant[0]['phone'];
+      name = resturant[0]['name'];
+    });
+   }
+
+
+
+   
   @override
   Widget build(BuildContext context) {
     var isDark = Theme.of(context).brightness == Brightness.dark;
@@ -142,7 +179,7 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
           borderRadius: BorderRadius.circular(10)),
       margin: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(children: [
-        Text(widget.resturantinfo.name,
+        Text(name,
             style:
                 FontStyleUtilities.h4(context: context, fontWeight: FWT.bold)),
         SpaceUtils.ks10.height(),
@@ -150,7 +187,7 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
         SizedBox(
             width: double.infinity,
             height: 45,
-            child: AboutRestro(para: widget.resturantinfo.aboutUs)),
+            child: AboutRestro(para: aboutresto)),
 
         //const RestaurantStatus(),
         SpaceUtils.ks16.height(),
@@ -159,7 +196,7 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
                 context: context, fontWeight: FWT.semiBold)),
         const SizedBox(height: 4),
         Text(
-          widget.resturantinfo.address,
+          restoadddress,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),

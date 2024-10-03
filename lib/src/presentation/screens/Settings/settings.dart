@@ -36,7 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
   var name = '';
   var userid="";
 
-  RestaurantService _restaurantService = RestaurantService();
+  
 
   Future<void> _fetchRestaurantData() async {
 
@@ -165,7 +165,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   name: 'About Restaurant',
                   onTap: () {
                     navigateToPage(context,
-                        page: RestaurantSetting(resturantinfo: resturantinfo));
+                        page: RestaurantSetting());
                   }),
               // SettingTile(
               //     name: 'Holidays',

@@ -5,7 +5,9 @@ import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/widgets/tagwidget.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
+import 'package:intl/intl.dart'; 
 
+import '../../../../../db/ResturantDB.dart';
 import '../../../../api/service/api.dart';
 
 class Active extends StatefulWidget {
@@ -17,29 +19,73 @@ class Active extends StatefulWidget {
 
 class _ActiveState extends State<Active> {
    List<dynamic> dataArray = [];
+   String formattedDate="";
+   String formattedTime="";
+
+
+   Future<void> _fetchRestaurantData() async {
+    List<Map<String, dynamic>> resturant =
+        await ResturantHelper.instance.getDetails();
+    print("Data Received from the DB 2 $resturant");
+
+    if (resturant != null) {
+      setState(() {
+        var id = resturant[0]['resid'];
+        _fetchApprovedOrder(id);
+      });
+    } else {
+      
+      print("No restaurant data received");
+    }
+  }
 
 //fetching approved order
-Future<void> _fetchApprovedOrder() async {
+Future<void> _fetchApprovedOrder(id) async {
   
     RestaurantService _restaurantService = RestaurantService();
 
     final menuData = await _restaurantService.fetchApprovedOrders("88");
 
     if (menuData != null) {
-      print("Current response $menuData");
+      print("Current response of appproved order $menuData");
 
       final filteredData = menuData.where((order) {
       return order.length == 26; // Only keep objects with exactly 26 key-value pairs
     }).toList();
+
+    var finalmenudetails = [];
+
+     for (var orderdetails in filteredData) {
+        final fetchorderdetails =
+            await _restaurantService.fetchOrderDetails(orderdetails['code']);
+        final fetchmenudetails = await _restaurantService
+            .fetchMenuDetails(fetchorderdetails![0]['menu_id']);
+
+        final obj = await {
+          'orderid': orderdetails['code'],
+          'orderplacedat': orderdetails['order_placed_at'],
+          'total_menu_price': orderdetails['total_menu_price'],
+          'total_delivery_charge': orderdetails['total_delivery_charge'],
+          'total_vat_amount': orderdetails['total_vat_amount'],
+          'grand_total': orderdetails['grand_total'],
+          'customer_name': orderdetails['customer_name'],
+          'customer_email': orderdetails['customer_email'],
+          'delivery_address': orderdetails['delivery_address'],
+          'menuname': fetchmenudetails['name'],
+          'restaurant_name': fetchmenudetails['restaurant_name'],
+        };
+
+        finalmenudetails.add(obj);
+      }
 
 
     
 
 
 
-      // setState(() {
-      //   dataArray = filteredData;
-      // });
+      setState(() {
+        dataArray = finalmenudetails;
+      });
 
       // Fetch details for each order once
       // for (var order in menuData) {
@@ -48,13 +94,32 @@ Future<void> _fetchApprovedOrder() async {
     } else {
       print("No restaurant data received");
     }
+
+
   }
+
+  void getCurrentDateTime() {
+  // Get the current date and time
+  DateTime now = DateTime.now();
+
+  // If you want to format the date and time, use the intl package
+
+  setState(() {
+  formattedDate = DateFormat('EEEE, MMMM dd, yyyy').format(now); // e.g., 2024-10-03
+  formattedTime = DateFormat('HH:mm').format(now); // e.g., 14:35:59
+  });
+  
+
+  print("Current Date: $formattedDate");
+  print("Current Time: $formattedTime");
+}
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _fetchApprovedOrder();
+    _fetchRestaurantData();
+    getCurrentDateTime();
   }
 
   @override
@@ -92,32 +157,19 @@ Future<void> _fetchApprovedOrder() async {
                             child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Customer Name',
+                            Text('Customer Name: ' +dataArray[index]['customer_name'],
                                 style: FontStyleUtilities.t2(
                                     context: context, fontWeight: FWT.bold)),
-                            Text('+1 123456789',
+                            Text('Email: '+dataArray[index]['customer_email'],
                                 style: FontStyleUtilities.t4(
                                     context: context,
                                     fontWeight: FWT.semiBold)),
-                            SpaceUtils.ks8.height(),
-                            ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: 3,
-                                itemBuilder: (context, i) => Row(
-                                      children: [
-                                        Text(
-                                          '${index + i + 1} x ${items[i]} ',
-                                          style: FontStyleUtilities.t2(
-                                              context: context,
-                                              fontWeight: FWT.semiBold),
-                                        ),
-                                      ],
-                                    ))
+                            SpaceUtils.ks24.height(),
+                           Text(dataArray[index]['menuname'],style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),)
                           ],
                         )),
                         Text(
-                          '\$210.00',
+                          '\$'+dataArray[index]['grand_total'],
                           style: FontStyleUtilities.h5(
                               context: context, fontWeight: FWT.bold),
                         ),
@@ -134,7 +186,7 @@ Future<void> _fetchApprovedOrder() async {
                           children: [
                             const Padding(
                               padding: EdgeInsets.only(top: 5),
-                              child: TrackerWidget(status: 2),
+                              child: TrackerWidget(status: 1),
                             ),
                             SpaceUtils.ks16.width(),
                             Padding(
@@ -145,23 +197,26 @@ Future<void> _fetchApprovedOrder() async {
                                     MainAxisAlignment.spaceBetween,
                                 children: const [
                                   TrackerWidgetText(
-                                      titel: "Order confirmed",
-                                      sutite: "June 2, 2021 at 7:00 PM"),
+                                      titel: "Pending Order",
+                                      sutite: "Order Approved Sucessfully"),
                                   TrackerWidgetText(
-                                      titel: "Order Prepared",
-                                      sutite: "June 2, 2021 at 7:00 PM"),
+                                      titel: "Approved Order",
+                                      sutite: "Order is under Preparation"),
                                   TrackerWidgetText(
-                                      titel: "Order In Progress",
-                                      sutite: "___"),
+                                      titel: "Order Deliverd",
+                                      sutite: "Order Delivered to customer"),
                                   TrackerWidgetText(
-                                      titel: "Delivered", sutite: "___"),
+                                      titel: "Order Completed",
+                                      sutite: "Order Completed Sucessfully"),
+
+                                 
                                 ],
                               ),
                             )
                           ],
                         )),
                     SpaceUtils.ks30.height(),
-                    Text('June 2, 2021 at 7:00 PM',
+                    Text(formattedDate,
                         style: FontStyleUtilities.t2(
                             context: context, fontWeight: FWT.bold)),
                     SpaceUtils.ks7.height(),
@@ -169,17 +224,14 @@ Future<void> _fetchApprovedOrder() async {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '05:37',
+                          formattedTime,
                           style: FontStyleUtilities.h3(
                               context: context, fontWeight: FWT.semiBold),
                         ),
                         SpaceUtils.ks16.width(),
                         const TagWidget(tagName: TagName.INPROGRESS),
                         const Spacer(),
-                        SvgPicture.asset(IconUtil.call,
-                            color: isDark
-                                ? ColorUtils.kcWhite
-                                : ColorUtils.kcCallIconColor)
+                        
                       ],
                     ),
                   ],
