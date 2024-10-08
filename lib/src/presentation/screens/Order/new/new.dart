@@ -53,41 +53,48 @@ class _NewState extends State<New> {
             26; // Only keep objects with exactly 26 key-value pairs
       }).toList();
 
-      var finalmenudetails = [];
+      var finalMenuDetails =
+          await Future.wait(filteredData.map((orderDetails) async {
+        final fetchOrderDetails =
+            await _restaurantService.fetchOrderDetails(orderDetails['code']);
+        final fetchMenuDetails = await _restaurantService
+            .fetchMenuDetails(fetchOrderDetails![0]['menu_id']);
 
-      for (var orderdetails in filteredData) {
-        final fetchorderdetails =
-            await _restaurantService.fetchOrderDetails(orderdetails['code']);
-        final fetchmenudetails = await _restaurantService
-            .fetchMenuDetails(fetchorderdetails![0]['menu_id']);
+        if (orderDetails['order_status'] == 'pending') {
+          print("order status received =" + orderDetails['order_status']);
+          return {
+            'orderid': orderDetails['code'],
+            'orderplacedat': orderDetails['order_placed_at'],
+            'total_menu_price': orderDetails['total_menu_price'],
+            'total_delivery_charge': orderDetails['total_delivery_charge'],
+            'total_vat_amount': orderDetails['total_vat_amount'],
+            'grand_total': orderDetails['grand_total'],
+            'customer_name': orderDetails['customer_name'],
+            'customer_email': orderDetails['customer_email'],
+            'delivery_address': orderDetails['delivery_address'],
+            'menuname': fetchMenuDetails['name'],
+            'restaurant_name': fetchMenuDetails['restaurant_name'],
+          };
+        }
+        return null;
+      }).toList());
 
-        final obj = await {
-          'orderid': orderdetails['code'],
-          'orderplacedat': orderdetails['order_placed_at'],
-          'total_menu_price': orderdetails['total_menu_price'],
-          'total_delivery_charge': orderdetails['total_delivery_charge'],
-          'total_vat_amount': orderdetails['total_vat_amount'],
-          'grand_total': orderdetails['grand_total'],
-          'customer_name': orderdetails['customer_name'],
-          'customer_email': orderdetails['customer_email'],
-          'delivery_address': orderdetails['delivery_address'],
-          'menuname': fetchmenudetails['name'],
-          'restaurant_name': fetchmenudetails['restaurant_name'],
-        };
+      // Remove any null entries from the final data
+      finalMenuDetails = finalMenuDetails.where((e) => e != null).toList();
 
-        finalmenudetails.add(obj);
+      if (mounted) {
+        setState(() {
+          dataArray = finalMenuDetails;
+          isLoading = false;
+          print("Final Menu Details");
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
       }
-
-      setState(() {
-        dataArray = finalmenudetails;
-        isLoading = false; // Stop loading once data is fetched
-        print("Final Menu Data = $finalmenudetails");
-      });
-    } else {
-      setState(() {
-        isLoading = false; // Stop loading if no data
-      });
-      print("No restaurant data received");
     }
   }
 
@@ -148,14 +155,18 @@ class _NewState extends State<New> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                          Text(dataArray[index]['menuname'],style: TextStyle(fontSize:22,fontWeight: FontWeight.bold),),
-                                           SpaceUtils.ks8.height(),
+                                        Text(
+                                          dataArray[index]['menuname'],
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SpaceUtils.ks8.height(),
                                         Text(
                                           "Name: " +
                                               dataArray[index]['customer_name'],

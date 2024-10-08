@@ -5,7 +5,7 @@ import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/widgets/tagwidget.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 
 import '../../../../../db/ResturantDB.dart';
 import '../../../../api/service/api.dart';
@@ -18,12 +18,16 @@ class Active extends StatefulWidget {
 }
 
 class _ActiveState extends State<Active> {
-   List<dynamic> dataArray = [];
-   String formattedDate="";
-   String formattedTime="";
+  String formattedDate = "";
+  String formattedTime = "";
 
+  List<dynamic> dataArray = [];
+  Map<String, dynamic> orderDetails = {};
+  RestaurantService _restaurantService = RestaurantService();
+  var restoid = "";
+  bool isLoading = true; // Add this to track loading state
 
-   Future<void> _fetchRestaurantData() async {
+  Future<void> _fetchRestaurantData() async {
     List<Map<String, dynamic>> resturant =
         await ResturantHelper.instance.getDetails();
     print("Data Received from the DB 2 $resturant");
@@ -31,92 +35,90 @@ class _ActiveState extends State<Active> {
     if (resturant != null) {
       setState(() {
         var id = resturant[0]['resid'];
-        _fetchApprovedOrder(id);
+        _fetchPendingOrder(id);
       });
     } else {
-      
+      setState(() {
+        isLoading = false; // Stop loading if no restaurant data
+      });
       print("No restaurant data received");
     }
   }
 
-//fetching approved order
-Future<void> _fetchApprovedOrder(id) async {
-  
-    RestaurantService _restaurantService = RestaurantService();
-
-    final menuData = await _restaurantService.fetchApprovedOrders("88");
+  Future<void> _fetchPendingOrder(String id) async {
+    final menuData = await _restaurantService.fetchPendingOrders(id);
 
     if (menuData != null) {
-      print("Current response of appproved order $menuData");
+      print("Current response $menuData");
 
       final filteredData = menuData.where((order) {
-      return order.length == 26; // Only keep objects with exactly 26 key-value pairs
-    }).toList();
+        return order.length ==
+            26; // Only keep objects with exactly 26 key-value pairs
+      }).toList();
 
-    var finalmenudetails = [];
+      var finalMenuDetails =
+          await Future.wait(filteredData.map((orderDetails) async {
+        final fetchOrderDetails =
+            await _restaurantService.fetchOrderDetails(orderDetails['code']);
+        final fetchMenuDetails = await _restaurantService
+            .fetchMenuDetails(fetchOrderDetails![0]['menu_id']);
 
-     for (var orderdetails in filteredData) {
-        final fetchorderdetails =
-            await _restaurantService.fetchOrderDetails(orderdetails['code']);
-        final fetchmenudetails = await _restaurantService
-            .fetchMenuDetails(fetchorderdetails![0]['menu_id']);
+        if (orderDetails['order_status'] == 'approved') {
+          print("order status received =" + orderDetails['order_status']);
+          return {
+            'orderid': orderDetails['code'],
+            'orderplacedat': orderDetails['order_placed_at'],
+            'total_menu_price': orderDetails['total_menu_price'],
+            'total_delivery_charge': orderDetails['total_delivery_charge'],
+            'total_vat_amount': orderDetails['total_vat_amount'],
+            'grand_total': orderDetails['grand_total'],
+            'customer_name': orderDetails['customer_name'],
+            'customer_email': orderDetails['customer_email'],
+            'delivery_address': orderDetails['delivery_address'],
+            'menuname': fetchMenuDetails['name'],
+            'restaurant_name': fetchMenuDetails['restaurant_name'],
+          };
+        }
+        return null;
+      }).toList());
 
-        final obj = await {
-          'orderid': orderdetails['code'],
-          'orderplacedat': orderdetails['order_placed_at'],
-          'total_menu_price': orderdetails['total_menu_price'],
-          'total_delivery_charge': orderdetails['total_delivery_charge'],
-          'total_vat_amount': orderdetails['total_vat_amount'],
-          'grand_total': orderdetails['grand_total'],
-          'customer_name': orderdetails['customer_name'],
-          'customer_email': orderdetails['customer_email'],
-          'delivery_address': orderdetails['delivery_address'],
-          'menuname': fetchmenudetails['name'],
-          'restaurant_name': fetchmenudetails['restaurant_name'],
-        };
+      // Remove any null entries from the final data
+      finalMenuDetails = finalMenuDetails.where((e) => e != null).toList();
 
-        finalmenudetails.add(obj);
+      if (mounted) {
+        setState(() {
+          dataArray = finalMenuDetails;
+          isLoading = false;
+          print("Final Menu Details");
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
       }
-
-
-    
-
-
-
-      setState(() {
-        dataArray = finalmenudetails;
-      });
-
-      // Fetch details for each order once
-      // for (var order in menuData) {
-      //   await _fetchingOrderDetails(order['code']);
-      // }
-    } else {
-      print("No restaurant data received");
     }
-
-
   }
 
   void getCurrentDateTime() {
-  // Get the current date and time
-  DateTime now = DateTime.now();
+    // Get the current date and time
+    DateTime now = DateTime.now();
 
-  // If you want to format the date and time, use the intl package
+    // If you want to format the date and time, use the intl package
 
-  setState(() {
-  formattedDate = DateFormat('EEEE, MMMM dd, yyyy').format(now); // e.g., 2024-10-03
-  formattedTime = DateFormat('HH:mm').format(now); // e.g., 14:35:59
-  });
-  
+    setState(() {
+      formattedDate =
+          DateFormat('EEEE, MMMM dd, yyyy').format(now); // e.g., 2024-10-03
+      formattedTime = DateFormat('HH:mm').format(now); // e.g., 14:35:59
+    });
 
-  print("Current Date: $formattedDate");
-  print("Current Time: $formattedTime");
-}
+    print("Current Date: $formattedDate");
+    print("Current Time: $formattedTime");
+  }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchRestaurantData();
     getCurrentDateTime();
@@ -129,116 +131,152 @@ Future<void> _fetchApprovedOrder(id) async {
       physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
-          ListView.builder(
-            itemCount:dataArray.length ,
-            physics: const ClampingScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                margin: const EdgeInsets.only(left: 20, right: 20, top: 20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? ColorUtils.kcSmoothBlack : ColorUtils.kcWhite,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                        offset: const Offset(-1, 7),
-                        blurRadius: 39,
-                        color: ColorUtils.kcTransparent.withOpacity(.13))
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Customer Name: ' +dataArray[index]['customer_name'],
-                                style: FontStyleUtilities.t2(
-                                    context: context, fontWeight: FWT.bold)),
-                            Text('Email: '+dataArray[index]['customer_email'],
-                                style: FontStyleUtilities.t4(
-                                    context: context,
-                                    fontWeight: FWT.semiBold)),
-                            SpaceUtils.ks24.height(),
-                           Text(dataArray[index]['menuname'],style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),)
-                          ],
-                        )),
-                        Text(
-                          '\$'+dataArray[index]['grand_total'],
-                          style: FontStyleUtilities.h5(
-                              context: context, fontWeight: FWT.bold),
-                        ),
-                      ],
-                    ),
-                    SpaceUtils.ks20.height(),
-                    Text('TRACK',
-                        style: FontStyleUtilities.t2(
-                            context: context, fontWeight: FWT.semiBold)),
-                    SpaceUtils.ks10.height(),
-                    SizedBox(
-                        height: 200,
-                        child: Row(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 5),
-                              child: TrackerWidget(status: 1),
-                            ),
-                            SpaceUtils.ks16.width(),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 0),
-                              child: Column(
+          isLoading
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : dataArray.isEmpty
+                  ? Center(
+                      child: Text('No Data Available'),
+                    )
+                  : ListView.builder(
+                      itemCount: dataArray.length,
+                      physics: const ClampingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Container(
+                          margin: const EdgeInsets.only(
+                              left: 20, right: 20, top: 20),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? ColorUtils.kcSmoothBlack
+                                : ColorUtils.kcWhite,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                  offset: const Offset(-1, 7),
+                                  blurRadius: 39,
+                                  color:
+                                      ColorUtils.kcTransparent.withOpacity(.13))
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: const [
-                                  TrackerWidgetText(
-                                      titel: "Pending Order",
-                                      sutite: "Order Approved Sucessfully"),
-                                  TrackerWidgetText(
-                                      titel: "Approved Order",
-                                      sutite: "Order is under Preparation"),
-                                  TrackerWidgetText(
-                                      titel: "Order Deliverd",
-                                      sutite: "Order Delivered to customer"),
-                                  TrackerWidgetText(
-                                      titel: "Order Completed",
-                                      sutite: "Order Completed Sucessfully"),
-
-                                 
+                                children: [
+                                  Expanded(
+                                      child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          'Customer Name: ' +
+                                              dataArray[index]['customer_name'],
+                                          style: FontStyleUtilities.t2(
+                                              context: context,
+                                              fontWeight: FWT.bold)),
+                                      Text(
+                                          'Email: ' +
+                                              dataArray[index]
+                                                  ['customer_email'],
+                                          style: FontStyleUtilities.t4(
+                                              context: context,
+                                              fontWeight: FWT.semiBold)),
+                                      SpaceUtils.ks24.height(),
+                                      Text(
+                                        dataArray[index]['menuname'],
+                                        style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    ],
+                                  )),
+                                  Text(
+                                    '\$' + dataArray[index]['grand_total'],
+                                    style: FontStyleUtilities.h5(
+                                        context: context, fontWeight: FWT.bold),
+                                  ),
                                 ],
                               ),
-                            )
-                          ],
-                        )),
-                    SpaceUtils.ks30.height(),
-                    Text(formattedDate,
-                        style: FontStyleUtilities.t2(
-                            context: context, fontWeight: FWT.bold)),
-                    SpaceUtils.ks7.height(),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          formattedTime,
-                          style: FontStyleUtilities.h3(
-                              context: context, fontWeight: FWT.semiBold),
-                        ),
-                        SpaceUtils.ks16.width(),
-                        const TagWidget(tagName: TagName.INPROGRESS),
-                        const Spacer(),
-                        
-                      ],
+                              SpaceUtils.ks20.height(),
+                              Text('TRACK',
+                                  style: FontStyleUtilities.t2(
+                                      context: context,
+                                      fontWeight: FWT.semiBold)),
+                              SpaceUtils.ks10.height(),
+                              SizedBox(
+                                  height: 250,
+                                  child: Row(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 5),
+                                        child: TrackerWidget(status: 1),
+                                      ),
+                                      SpaceUtils.ks16.width(),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: const [
+                                            TrackerWidgetText(
+                                                titel: "Pending Order",
+                                                sutite:
+                                                    "Order Approved Sucessfully"),
+                                            TrackerWidgetText(
+                                                titel: "Approved Order",
+                                                sutite:
+                                                    "Order is under Preparation"),
+                                            TrackerWidgetText(
+                                                titel: "Order Preparing",
+                                                sutite:
+                                                    "Order is under Preparation"),
+                                            TrackerWidgetText(
+                                                titel: "Order Deliverd",
+                                                sutite:
+                                                    "Order Delivered to customer"),
+                                            TrackerWidgetText(
+                                                titel: "Order Completed",
+                                                sutite:
+                                                    "Order Completed Sucessfully"),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  )),
+                              SpaceUtils.ks30.height(),
+                              Text(formattedDate,
+                                  style: FontStyleUtilities.t2(
+                                      context: context, fontWeight: FWT.bold)),
+                              SpaceUtils.ks7.height(),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    formattedTime,
+                                    style: FontStyleUtilities.h3(
+                                        context: context,
+                                        fontWeight: FWT.semiBold),
+                                  ),
+                                  SpaceUtils.ks16.width(),
+                                  const TagWidget(tagName: TagName.INPROGRESS),
+                                  const Spacer(),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
           SpaceUtils.ks120.height()
         ],
       ),
@@ -296,6 +334,10 @@ class TrackerWidget extends StatelessWidget {
               NodeOfPercent(
                 nodeNumber: 3,
                 selctone: status >= 3,
+              ),
+              NodeOfPercent(
+                nodeNumber: 4,
+                selctone: status >= 4,
               ),
             ],
           ),

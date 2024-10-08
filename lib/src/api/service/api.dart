@@ -9,10 +9,11 @@ class RestaurantService {
   // Base API URLs
   final String apiUri = "https://www.guildresto.com/api/restaurant";
   final String apiMenuUri = "https://www.guildresto.com/api/menu";
-  final String apiPendingOrderUri = "https://www.guildresto.com/api/pending";
+  final String apiPendingOrderUri = "https://www.guildresto.com/api/orderinfo";
   final String apiMenuDetailsUri = "https://www.guildresto.com/api/menudetails";
   final String apiApprovedOrderUri = "https://www.guildresto.com/api/approved";
-  final String apiOrderDetailsUri = "https://www.guildresto.com/api/orderdetails";
+  final String apiOrderDetailsUri =
+      "https://www.guildresto.com/api/orderdetails";
 
   // Generic API call function
   Future<dynamic> _apiCall(String uri, Map<String, dynamic> requestBody) async {

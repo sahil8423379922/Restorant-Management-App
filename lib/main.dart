@@ -23,8 +23,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
-
   @override
   void initState() {
     // TODO: implement initState
@@ -32,13 +30,7 @@ class _MyAppState extends State<MyApp> {
     check_user_already_logged_in();
   }
 
-  
-
-
-
-  void insertResturantData(){
-   
-  }
+  void insertResturantData() {}
 
   bool state = false;
 
@@ -47,7 +39,6 @@ class _MyAppState extends State<MyApp> {
     if (users.length > 0) {
       setState(() {
         state = true;
-        
       });
     }
   }

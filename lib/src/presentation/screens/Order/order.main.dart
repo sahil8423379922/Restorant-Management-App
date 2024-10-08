@@ -5,14 +5,15 @@ import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/constatns/spaces.dart';
 import 'package:resturant_side/src/presentation/screens/Order/active/active.dart';
 import 'package:resturant_side/src/presentation/screens/Order/complete/complete.dart';
+import 'package:resturant_side/src/presentation/screens/Order/delivered/delivered_order.dart';
+import 'package:resturant_side/src/presentation/screens/Order/new/new.dart';
+import 'package:resturant_side/src/presentation/screens/Order/prepared/prepared_order.dart';
 import 'package:resturant_side/src/presentation/screens/Settings/settings.dart';
 import 'package:resturant_side/src/presentation/screens/notification/notification.dart';
 import 'package:resturant_side/src/presentation/screens/resturanttable/freetable/freetable.dart';
 import 'package:resturant_side/src/presentation/widgets/customiconbutton.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
-
-import 'new/new.dart';
 
 class OrderMain extends StatefulWidget {
   const OrderMain({
@@ -33,13 +34,28 @@ class OrderMain extends StatefulWidget {
 class _OrderMainState extends State<OrderMain>
     with SingleTickerProviderStateMixin {
   late TabController _OrderMainController;
+  late List<GlobalKey> tabKeys;
+
   @override
   void initState() {
-    _OrderMainController = TabController(length: 3, vsync: this);
     super.initState();
+    _OrderMainController = TabController(length: 5, vsync: this);
+    tabKeys = List.generate(5, (_) => GlobalKey());
   }
 
-  List<String> tabs = <String>['Pending Order', 'Approved Order', 'Delivered Order'];
+  @override
+  void dispose() {
+    _OrderMainController.dispose();
+    super.dispose();
+  }
+
+  List<String> tabs = <String>[
+    'Pending Order',
+    'Approved Order',
+    'Preparing Order',
+    'Prepared Order',
+    'Delivered Order'
+  ];
   List<String> times = <String>[
     '4',
     '3',
@@ -79,10 +95,7 @@ class _OrderMainState extends State<OrderMain>
         leading: CustomIconButton(
           size: 20,
           onTap: () {
-            navigateToPage(context,
-                page: SettingsPage(
-                 
-                ));
+            navigateToPage(context, page: SettingsPage());
           },
           child: SvgPicture.asset(
             IconUtil.menu,
@@ -148,10 +161,12 @@ class _OrderMainState extends State<OrderMain>
               child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _OrderMainController,
-                  children: const [
-                New(),
-                Active(),
-                Complete(),
+                  children: [
+                KeyedSubtree(key: tabKeys[0], child: const New()),
+                KeyedSubtree(key: tabKeys[1], child: const Active()),
+                KeyedSubtree(key: tabKeys[2], child: const Complete()),
+                KeyedSubtree(key: tabKeys[3], child: const PreparedOrder()),
+                KeyedSubtree(key: tabKeys[4], child: const DeliverdOrder()),
               ])),
         ],
       ),
