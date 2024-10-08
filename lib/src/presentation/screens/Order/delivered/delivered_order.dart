@@ -285,7 +285,7 @@ class _DeliverdOrderState extends State<DeliverdOrder> {
                                     Expanded(
                                       child: MasterButton(
                                         radius: 25,
-                                        tittle: 'Approved',
+                                        tittle: 'Delivered Sucessfully',
                                         color: ColorUtils.kcGreenColor,
                                         onTap: () {},
                                       ),

@@ -319,7 +319,7 @@ class _ActiveState extends State<Active> {
                                           onPressed: () {
                                               _onWillPop(
                                                   dataArray[index]['orderid'],
-                                                  "preparation");
+                                                  "preparing");
                                           },
                                           child: SizedBox(
                                             
