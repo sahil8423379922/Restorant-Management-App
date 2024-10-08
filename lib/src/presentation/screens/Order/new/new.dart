@@ -104,197 +104,236 @@ class _NewState extends State<New> {
     _fetchRestaurantData();
   }
 
+  Future<bool> _onWillPop(oid, phase) async {
+    return (await showDialog(
+          context: context,
+          builder: (context) => new AlertDialog(
+            title: new Text('Are you sure?'),
+            content: new Text('Do you want to Approve Order'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: new Text('No'),
+              ),
+              TextButton(
+                onPressed: () async => {await _approveOrder(oid, phase)},
+                child: new Text('Yes'),
+              ),
+            ],
+          ),
+        )) ??
+        false;
+  }
+
+  Future<void> _approveOrder(oid, phase) async {
+    final fetchOrderDetails =
+        await _restaurantService.ChangeOrderStatus(oid, phase);
+    print("Order Status Updated");
+    setState(() {
+      isLoading = true;
+      _fetchRestaurantData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        children: [
-          isLoading
-              ? Center(
-                  child:
-                      CircularProgressIndicator(), // Show progress indicator while loading
-                )
-              : dataArray.isEmpty
-                  ? Center(
-                      child:
-                          Text("No data available")) // Show message if no data
-                  : ListView.builder(
-                      itemCount: dataArray.length,
-                      physics: const ClampingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        final orderId = dataArray[index]['orderid'];
-                        final details = orderDetails[orderId];
+    return WillPopScope(
+      onWillPop: () => _onWillPop("oid", "phase"),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            isLoading
+                ? Center(
+                    child:
+                        CircularProgressIndicator(), // Show progress indicator while loading
+                  )
+                : dataArray.isEmpty
+                    ? Center(
+                        child: Text(
+                            "No data available")) // Show message if no data
+                    : ListView.builder(
+                        itemCount: dataArray.length,
+                        physics: const ClampingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemBuilder: (BuildContext context, int index) {
+                          final orderId = dataArray[index]['orderid'];
+                          final details = orderDetails[orderId];
 
-                        return Container(
-                          margin: const EdgeInsets.only(
-                              left: 20, right: 20, top: 20),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? ColorUtils.kcSmoothBlack
-                                : ColorUtils.kcWhite,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                offset: const Offset(-1, 7),
-                                blurRadius: 39,
-                                color:
-                                    ColorUtils.kcTransparent.withOpacity(.13),
-                              )
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
+                          return Container(
+                            margin: const EdgeInsets.only(
+                                left: 20, right: 20, top: 20),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? ColorUtils.kcSmoothBlack
+                                  : ColorUtils.kcWhite,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  offset: const Offset(-1, 7),
+                                  blurRadius: 39,
+                                  color:
+                                      ColorUtils.kcTransparent.withOpacity(.13),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            dataArray[index]['menuname'],
+                                            style: TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          SpaceUtils.ks8.height(),
+                                          Text(
+                                            "Name: " +
+                                                dataArray[index]
+                                                    ['customer_name'],
+                                            style: FontStyleUtilities.t2(
+                                              context: context,
+                                              fontWeight: FWT.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            "Email: " +
+                                                dataArray[index]
+                                                    ['customer_email'],
+                                            style: FontStyleUtilities.t4(
+                                              context: context,
+                                              fontWeight: FWT.semiBold,
+                                            ),
+                                          ),
+                                          Text(
+                                            "Address: " +
+                                                dataArray[index]
+                                                    ['delivery_address'],
+                                            style: FontStyleUtilities.t4(
+                                              context: context,
+                                              fontWeight: FWT.semiBold,
+                                            ),
+                                          ),
+                                          SpaceUtils.ks8.height(),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      '\$${dataArray[index]['grand_total']}',
+                                      style: FontStyleUtilities.h5(
+                                        context: context,
+                                        fontWeight: FWT.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SpaceUtils.ks30.height(),
+                                Row(
+                                  children: [
+                                    Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                        Text("Bill Details :"),
                                         Text(
-                                          dataArray[index]['menuname'],
-                                          style: TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        SpaceUtils.ks8.height(),
-                                        Text(
-                                          "Name: " +
-                                              dataArray[index]['customer_name'],
+                                          "Menu Price: " +
+                                              dataArray[index]
+                                                  ['total_menu_price'],
                                           style: FontStyleUtilities.t2(
                                             context: context,
                                             fontWeight: FWT.bold,
                                           ),
                                         ),
                                         Text(
-                                          "Email: " +
+                                          "Delivery Charges: " +
                                               dataArray[index]
-                                                  ['customer_email'],
-                                          style: FontStyleUtilities.t4(
+                                                  ['total_delivery_charge'],
+                                          style: FontStyleUtilities.t2(
                                             context: context,
-                                            fontWeight: FWT.semiBold,
+                                            fontWeight: FWT.bold,
                                           ),
                                         ),
                                         Text(
-                                          "Address: " +
+                                          "Total VAT: " +
                                               dataArray[index]
-                                                  ['delivery_address'],
-                                          style: FontStyleUtilities.t4(
+                                                  ['total_vat_amount'],
+                                          style: FontStyleUtilities.t2(
                                             context: context,
-                                            fontWeight: FWT.semiBold,
+                                            fontWeight: FWT.bold,
                                           ),
                                         ),
-                                        SpaceUtils.ks8.height(),
+                                        Text(
+                                          "Grand Total: " +
+                                              dataArray[index]['grand_total'],
+                                          style: FontStyleUtilities.t2(
+                                            context: context,
+                                            fontWeight: FWT.bold,
+                                          ),
+                                        ),
+                                        SpaceUtils.ks30.height(),
+                                        Text("Order Placed At :"),
+                                        Text(
+                                          dataArray[index]['orderplacedat'],
+                                          style: FontStyleUtilities.t2(
+                                            context: context,
+                                            fontWeight: FWT.bold,
+                                          ),
+                                        ),
+                                        SpaceUtils.ks16.height(),
+                                        Text("Order ID",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                        Text(
+                                          orderId,
+                                          style: TextStyle(
+                                              backgroundColor: Colors.black),
+                                        ),
                                       ],
                                     ),
-                                  ),
-                                  Text(
-                                    '\$${dataArray[index]['grand_total']}',
-                                    style: FontStyleUtilities.h5(
-                                      context: context,
-                                      fontWeight: FWT.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SpaceUtils.ks30.height(),
-                              Row(
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    const Spacer(),
+                                  ],
+                                ),
+                                SpaceUtils.ks18.height(),
+                                SizedBox(
+                                  child: Row(
                                     children: [
-                                      Text("Bill Details :"),
-                                      Text(
-                                        "Menu Price: " +
-                                            dataArray[index]
-                                                ['total_menu_price'],
-                                        style: FontStyleUtilities.t2(
-                                          context: context,
-                                          fontWeight: FWT.bold,
+                                      SpaceUtils.ks18.width(),
+                                      Expanded(
+                                        child: MasterButton(
+                                          radius: 25,
+                                          tittle: 'Approved',
+                                          color: ColorUtils.kcGreenColor,
+                                          onTap: () {
+                                            _onWillPop(
+                                                dataArray[index]['orderid'],
+                                                "approved");
+                                          },
                                         ),
-                                      ),
-                                      Text(
-                                        "Delivery Charges: " +
-                                            dataArray[index]
-                                                ['total_delivery_charge'],
-                                        style: FontStyleUtilities.t2(
-                                          context: context,
-                                          fontWeight: FWT.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        "Total VAT: " +
-                                            dataArray[index]
-                                                ['total_vat_amount'],
-                                        style: FontStyleUtilities.t2(
-                                          context: context,
-                                          fontWeight: FWT.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        "Grand Total: " +
-                                            dataArray[index]['grand_total'],
-                                        style: FontStyleUtilities.t2(
-                                          context: context,
-                                          fontWeight: FWT.bold,
-                                        ),
-                                      ),
-                                      SpaceUtils.ks30.height(),
-                                      Text("Order Placed At :"),
-                                      Text(
-                                        dataArray[index]['orderplacedat'],
-                                        style: FontStyleUtilities.t2(
-                                          context: context,
-                                          fontWeight: FWT.bold,
-                                        ),
-                                      ),
-                                      SpaceUtils.ks16.height(),
-                                      Text("Order ID",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      Text(
-                                        orderId,
-                                        style: TextStyle(
-                                            backgroundColor: Colors.black),
                                       ),
                                     ],
                                   ),
-                                  const Spacer(),
-                                ],
-                              ),
-                              SpaceUtils.ks18.height(),
-                              SizedBox(
-                                child: Row(
-                                  children: [
-                                    SpaceUtils.ks18.width(),
-                                    Expanded(
-                                      child: MasterButton(
-                                        radius: 25,
-                                        tittle: 'Approved',
-                                        color: ColorUtils.kcGreenColor,
-                                        onTap: () {},
-                                      ),
-                                    ),
-                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-          SpaceUtils.ks120.height(),
-        ],
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+            SpaceUtils.ks120.height(),
+          ],
+        ),
       ),
     );
   }

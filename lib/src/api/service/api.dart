@@ -14,6 +14,7 @@ class RestaurantService {
   final String apiApprovedOrderUri = "https://www.guildresto.com/api/approved";
   final String apiOrderDetailsUri =
       "https://www.guildresto.com/api/orderdetails";
+  final String apichangeStatus = "https://www.guildresto.com/api/process";
 
   // Generic API call function
   Future<dynamic> _apiCall(String uri, Map<String, dynamic> requestBody) async {
@@ -71,6 +72,13 @@ class RestaurantService {
     final Map<String, dynamic> requestBody = {"resid": id};
     print("Received ID: $id");
     return await _apiCall(apiPendingOrderUri, requestBody);
+  }
+
+  // Change Order Status
+  Future<List<dynamic>?> ChangeOrderStatus(String id, String phase) async {
+    final Map<String, dynamic> requestBody = {"oid": id, "phase": phase};
+    print("Received ID: $id");
+    return await _apiCall(apichangeStatus, requestBody);
   }
 
   // Fetch menu details

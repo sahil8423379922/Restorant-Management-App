@@ -241,9 +241,9 @@ class _ActiveState extends State<Active> {
                                                 sutite:
                                                     "Order is under Preparation"),
                                             TrackerWidgetText(
-                                                titel: "Order Deliverd",
+                                                titel: "Order Prepared",
                                                 sutite:
-                                                    "Order Delivered to customer"),
+                                                    "Order Preparation is Done"),
                                             TrackerWidgetText(
                                                 titel: "Order Completed",
                                                 sutite:

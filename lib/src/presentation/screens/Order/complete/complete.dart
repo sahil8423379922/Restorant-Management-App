@@ -210,8 +210,8 @@ class _CompleteState extends State<Complete> {
                                       titel: "Order Preparing",
                                       sutite: "Order is under Preparation"),
                                   TrackerWidgetText(
-                                      titel: "Order Deliverd",
-                                      sutite: "Order Delivered to customer"),
+                                      titel: "Order Prepared",
+                                      sutite: "Order Preparation is Done"),
                                   TrackerWidgetText(
                                       titel: "Order Completed",
                                       sutite: "Order Completed Sucessfully"),
