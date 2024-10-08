@@ -164,7 +164,20 @@ class _CompleteState extends State<Complete> {
       onWillPop: () => _onWillPop("oid", "phase"),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        child: Column(
+        child: 
+        isLoading?
+        Center(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : dataArray.isEmpty
+                    ? Center(
+                        child: Text('No Data Available'),
+                      )
+                    :
+        Column(
           children: [
             ListView.builder(
               itemCount: dataArray.length,
@@ -303,6 +316,7 @@ class _CompleteState extends State<Complete> {
             
           ],
         ),
+      
       ),
     );
   }

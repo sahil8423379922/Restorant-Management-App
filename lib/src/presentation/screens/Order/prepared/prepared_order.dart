@@ -165,6 +165,17 @@ class _PreparedOrderState extends State<PreparedOrder> {
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
+            isLoading? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : dataArray.isEmpty
+                    ? Center(
+                        child: Text('No Data Available'),
+                      )
+                    :
             ListView.builder(
               itemCount: dataArray.length,
               physics: const ClampingScrollPhysics(),
