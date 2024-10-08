@@ -125,168 +125,217 @@ class _ActiveState extends State<Active> {
     getCurrentDateTime();
   }
 
+   Future<bool> _onWillPop(oid, phase) async {
+    return (await showDialog(
+          context: context,
+          builder: (context) => new AlertDialog(
+            title: new Text('Are you sure?'),
+            content: new Text('Do you want move order to Preparation?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: new Text('No'),
+              ),
+              TextButton(
+                onPressed: () async => {await _approveOrder(oid, phase)},
+                child: new Text('Yes'),
+              ),
+            ],
+          ),
+        )) ??
+        false;
+  }
+
+  Future<void> _approveOrder(oid, phase) async {
+    final fetchOrderDetails =
+        await _restaurantService.ChangeOrderStatus(oid, phase);
+    print("Order Status Updated");
+    if (fetchOrderDetails != null) {
+      setState(() {
+        isLoading = true;
+        _fetchRestaurantData();
+        Navigator.of(context).pop(false);
+      });
+    } else {
+      Navigator.of(context).pop(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var isDark = Theme.of(context).brightness == Brightness.dark;
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        children: [
-          isLoading
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              : dataArray.isEmpty
-                  ? Center(
-                      child: Text('No Data Available'),
-                    )
-                  : ListView.builder(
-                      itemCount: dataArray.length,
-                      physics: const ClampingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          margin: const EdgeInsets.only(
-                              left: 20, right: 20, top: 20),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? ColorUtils.kcSmoothBlack
-                                : ColorUtils.kcWhite,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                  offset: const Offset(-1, 7),
-                                  blurRadius: 39,
-                                  color:
-                                      ColorUtils.kcTransparent.withOpacity(.13))
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                      child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                          'Customer Name: ' +
-                                              dataArray[index]['customer_name'],
-                                          style: FontStyleUtilities.t2(
-                                              context: context,
-                                              fontWeight: FWT.bold)),
-                                      Text(
-                                          'Email: ' +
-                                              dataArray[index]
-                                                  ['customer_email'],
-                                          style: FontStyleUtilities.t4(
-                                              context: context,
-                                              fontWeight: FWT.semiBold)),
-                                      SpaceUtils.ks24.height(),
-                                      Text(
-                                        dataArray[index]['menuname'],
-                                        style: TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold),
-                                      )
-                                    ],
-                                  )),
-                                  Text(
-                                    '\$' + dataArray[index]['grand_total'],
-                                    style: FontStyleUtilities.h5(
-                                        context: context, fontWeight: FWT.bold),
-                                  ),
-                                ],
-                              ),
-                              SpaceUtils.ks20.height(),
-                              Text('TRACK',
-                                  style: FontStyleUtilities.t2(
-                                      context: context,
-                                      fontWeight: FWT.semiBold)),
-                              SpaceUtils.ks10.height(),
-                              SizedBox(
-                                  height: 250,
-                                  child: Row(
-                                    children: [
-                                      const Padding(
-                                        padding: EdgeInsets.only(top: 5),
-                                        child: TrackerWidget(status: 1),
-                                      ),
-                                      SpaceUtils.ks16.width(),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 0),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: const [
-                                            TrackerWidgetText(
-                                                titel: "Pending Order",
-                                                sutite:
-                                                    "Order Approved Sucessfully"),
-                                            TrackerWidgetText(
-                                                titel: "Approved Order",
-                                                sutite:
-                                                    "Order is under Preparation"),
-                                            TrackerWidgetText(
-                                                titel: "Order Preparing",
-                                                sutite:
-                                                    "Order is under Preparation"),
-                                            TrackerWidgetText(
-                                                titel: "Order Prepared",
-                                                sutite:
-                                                    "Order Preparation is Done"),
-                                            TrackerWidgetText(
-                                                titel: "Order Completed",
-                                                sutite:
-                                                    "Order Completed Sucessfully"),
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  )),
-                              SpaceUtils.ks30.height(),
-                              Text(formattedDate,
-                                  style: FontStyleUtilities.t2(
-                                      context: context, fontWeight: FWT.bold)),
-                              SpaceUtils.ks7.height(),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    formattedTime,
-                                    style: FontStyleUtilities.h3(
-                                        context: context,
-                                        fontWeight: FWT.semiBold),
-                                  ),
-                                  SpaceUtils.ks16.width(),
-                                  const TagWidget(tagName: TagName.INPROGRESS),
-                                  const Spacer(),
-                                  TextButton(
-                                      onPressed: () {},
-                                      child: SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: Text("Move to "),
-                                      ))
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+    return WillPopScope(
+      onWillPop: () => _onWillPop("oid", "phase"),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            isLoading
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: CircularProgressIndicator(),
                     ),
-          SpaceUtils.ks120.height(),
-        ],
+                  )
+                : dataArray.isEmpty
+                    ? Center(
+                        child: Text('No Data Available'),
+                      )
+                    : ListView.builder(
+                        itemCount: dataArray.length,
+                        physics: const ClampingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Container(
+                            margin: const EdgeInsets.only(
+                                left: 20, right: 20, top: 20),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? ColorUtils.kcSmoothBlack
+                                  : ColorUtils.kcWhite,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                    offset: const Offset(-1, 7),
+                                    blurRadius: 39,
+                                    color:
+                                        ColorUtils.kcTransparent.withOpacity(.13))
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            'Customer Name: ' +
+                                                dataArray[index]['customer_name'],
+                                            style: FontStyleUtilities.t2(
+                                                context: context,
+                                                fontWeight: FWT.bold)),
+                                        Text(
+                                            'Email: ' +
+                                                dataArray[index]
+                                                    ['customer_email'],
+                                            style: FontStyleUtilities.t4(
+                                                context: context,
+                                                fontWeight: FWT.semiBold)),
+                                        SpaceUtils.ks24.height(),
+                                        Text(
+                                          dataArray[index]['menuname'],
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      ],
+                                    )),
+                                    Text(
+                                      '\$' + dataArray[index]['grand_total'],
+                                      style: FontStyleUtilities.h5(
+                                          context: context, fontWeight: FWT.bold),
+                                    ),
+                                  ],
+                                ),
+                                SpaceUtils.ks20.height(),
+                                Text('TRACK',
+                                    style: FontStyleUtilities.t2(
+                                        context: context,
+                                        fontWeight: FWT.semiBold)),
+                                SpaceUtils.ks10.height(),
+                                SizedBox(
+                                    height: 250,
+                                    child: Row(
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.only(top: 5),
+                                          child: TrackerWidget(status: 1),
+                                        ),
+                                        SpaceUtils.ks16.width(),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: const [
+                                              TrackerWidgetText(
+                                                  titel: "Pending Order",
+                                                  sutite:
+                                                      "Order Approved Sucessfully"),
+                                              TrackerWidgetText(
+                                                  titel: "Approved Order",
+                                                  sutite:
+                                                      "Order is under Preparation"),
+                                              TrackerWidgetText(
+                                                  titel: "Order Preparing",
+                                                  sutite:
+                                                      "Order is under Preparation"),
+                                              TrackerWidgetText(
+                                                  titel: "Order Prepared",
+                                                  sutite:
+                                                      "Order Preparation is Done"),
+                                              TrackerWidgetText(
+                                                  titel: "Order Completed",
+                                                  sutite:
+                                                      "Order Completed Sucessfully"),
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                SpaceUtils.ks30.height(),
+                                Text(formattedDate,
+                                    style: FontStyleUtilities.t2(
+                                        context: context, fontWeight: FWT.bold)),
+                                SpaceUtils.ks7.height(),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      formattedTime,
+                                      style: FontStyleUtilities.h3(
+                                          context: context,
+                                          fontWeight: FWT.semiBold),
+                                    ),
+                                    SpaceUtils.ks16.width(),
+                                    const TagWidget(tagName: TagName.INPROGRESS),
+                                    const Spacer(),
+                                   
+                                  ],
+                                ),
+                                SizedBox(height: 20,),
+                                 Card(
+                                  color: Colors.green,
+                                   child: TextButton(
+                                          onPressed: () {
+                                              _onWillPop(
+                                                  dataArray[index]['orderid'],
+                                                  "preparation");
+                                          },
+                                          child: SizedBox(
+                                            
+                                            height: 20,
+                                            width: double.infinity,
+                                            child: Text("Move to Preparation",textAlign: TextAlign.center,style: TextStyle(fontSize:20,color: Colors.white),),
+                                          )),
+                                 )
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+            SpaceUtils.ks120.height(),
+          ],
+        ),
       ),
     );
   }
