@@ -75,7 +75,7 @@ class RestaurantService {
   }
 
   // Change Order Status
-  Future<List<dynamic>?> ChangeOrderStatus(String id, String phase) async {
+  Future<bool> ChangeOrderStatus(String id, String phase) async {
     final Map<String, dynamic> requestBody = {"oid": id, "phase": phase};
     print("Received ID: $id");
     return await _apiCall(apichangeStatus, requestBody);

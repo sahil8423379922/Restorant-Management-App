@@ -129,10 +129,15 @@ class _NewState extends State<New> {
     final fetchOrderDetails =
         await _restaurantService.ChangeOrderStatus(oid, phase);
     print("Order Status Updated");
-    setState(() {
-      isLoading = true;
-      _fetchRestaurantData();
-    });
+    if (fetchOrderDetails != null) {
+      setState(() {
+        isLoading = true;
+        _fetchRestaurantData();
+        Navigator.of(context).pop(false);
+      });
+    } else {
+      Navigator.of(context).pop(false);
+    }
   }
 
   @override

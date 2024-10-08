@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../../db/ResturantDB.dart';
 import '../../../../api/service/api.dart';
+import '../../../widgets/masterbutton.dart';
 
 class Active extends StatefulWidget {
   const Active({Key? key}) : super(key: key);
@@ -270,6 +271,13 @@ class _ActiveState extends State<Active> {
                                   SpaceUtils.ks16.width(),
                                   const TagWidget(tagName: TagName.INPROGRESS),
                                   const Spacer(),
+                                  TextButton(
+                                      onPressed: () {},
+                                      child: SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: Text("Move to "),
+                                      ))
                                 ],
                               ),
                             ],
@@ -277,7 +285,7 @@ class _ActiveState extends State<Active> {
                         );
                       },
                     ),
-          SpaceUtils.ks120.height()
+          SpaceUtils.ks120.height(),
         ],
       ),
     );
