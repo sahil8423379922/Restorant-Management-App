@@ -182,7 +182,7 @@ _fetchRestaurantData(id);
       ? (dataArray[index]['name'] ?? '').substring(0, 20) + '...' 
       : dataArray[index]['name'] ?? '',
                   restuant: dataArray[index]['restaurant_id'],
-                  image: itmes[index].image,
+                 image: "https://www.guildresto.com/uploads/menu/" + (dataArray[index]['thumbnail'] ?? ''),
                   price: jsonDecode(dataArray[index]['price'])['menu'],
                   isVeg: itmes[index].isVeg,
                   onChange: (bool value) {},
@@ -240,7 +240,7 @@ class _ItemTileState extends State<ItemTile> {
                       width: 96,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.asset(
+                        child: Image.network(
                           widget.image,
                           fit: BoxFit.cover,
                         ),
