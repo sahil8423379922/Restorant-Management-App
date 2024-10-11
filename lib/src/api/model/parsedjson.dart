@@ -77,7 +77,7 @@ class Restaurant {
       //     ? (json['delivery_charge'] as num).toDouble()
       //     : 0.0,
       // maximumTimeToDeliver: json['maximum_time_to_deliver'],
-      // gallery: json['gallery'], // Nullable
+      gallery: json['gallery'], // Nullable
       // latitude:
       //     json['latitude'] != null ? (json['latitude'] as num).toDouble() : 0.0,
       // longitude: json['longitude'] != null

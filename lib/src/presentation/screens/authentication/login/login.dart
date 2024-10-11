@@ -55,7 +55,7 @@ class _LoginState extends State<Login> {
       // Check the response status code
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        print("Response Data: $responseData");
+        print("Response Data resturant: $responseData");
 
         if (responseData.length > 1) {
           parseData(responseData);
@@ -97,9 +97,13 @@ class _LoginState extends State<Login> {
 
   Future<void> _fetchRestaurantData(String userid) async {
     final restuantdata = await _restaurantService.fetchRestaurantData(userid);
+    print("Gallery data Received =");
+    print(restuantdata?.gallery);
 
     if (restuantdata != null) {
       print("Name of the restaurant = ${restuantdata.name}");
+      print("Resturant thumbnail =${restuantdata.thumbnail}");
+      
       ResturantHelper.instance.insertDetails({
         'resid': restuantdata.id,
         'name': restuantdata.name,
@@ -112,7 +116,8 @@ class _LoginState extends State<Login> {
         'website': restuantdata.website,
         'ownername': restuantdata.ownerId,
         'ownerphone': restuantdata.ownerId,
-        'owneremail': restuantdata.ownerId
+        'owneremail': restuantdata.ownerId,
+        
       });
     } else {
       print("No restaurant data received");

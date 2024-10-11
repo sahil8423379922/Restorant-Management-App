@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,14 +13,15 @@ import 'package:resturant_side/src/presentation/widgets/mastertextfield.dart';
 import 'package:resturant_side/src/repository/itemrepo.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../db/DatabaseHelper.dart';
 import '../../../../db/ResturantDB.dart';
+import '../../../api/service/api.dart';
 
 class RestaurantSetting extends StatefulWidget {
-  
   const RestaurantSetting({
     Key? key,
-   
   }) : super(key: key);
 
   @override
@@ -26,10 +29,53 @@ class RestaurantSetting extends StatefulWidget {
 }
 
 class _RestaurantSettingState extends State<RestaurantSetting> {
+  var userid = "";
+  var resturantglry = [];
+  var resturantthumbnail = "";
+  var restophone = "";
 
- 
+  Future<void> check_user_already_logged_in() async {
+    List<Map<String, dynamic>> users = await DatabaseHelper.instance.getUsers();
+    print('Data Received = $users');
+    print(users[0]['userid']);
 
+    setState(() {
+      userid = users[0]['userid'];
+      _fetchRestaurantData(userid);
+    });
+  }
 
+  Future<void> _fetchRestaurantData(String userid) async {
+    RestaurantService _restaurantService = RestaurantService();
+    final restuantdata = await _restaurantService.fetchRestaurantData(userid);
+    final restuarntgallery = restuantdata?.gallery;
+    final restothumbnail = restuantdata?.restaurantThumbnail;
+    final rphone = restuantdata?.phone;
+
+    print(restothumbnail);
+    setState(() {
+      resturantglry = jsonDecode(restuarntgallery!);
+      resturantthumbnail = restothumbnail!;
+      restophone = rphone!;
+    });
+
+    //final resturantdata =jsonEncode(restuantdata);
+
+    print("user ID received =" + userid);
+    print(restothumbnail);
+    print(restophone);
+    print(jsonDecode(restuarntgallery!).length);
+    //print("Request Payload: ${restuantdata?.gallery}");
+
+    //print("Gallery Data Received from the DB 2 $restuantdata");
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    check_user_already_logged_in();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +107,9 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
                         child: Container(
                           width: double.infinity,
                           height: 253,
-                          child: Image.asset(
-                            itmes[1].image,
+                          child: Image.network(
+                            "https://www.guildresto.com/uploads/restaurant/thumbnail/" +
+                                resturantthumbnail,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -70,12 +117,14 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
                       Positioned(
                           width: MediaQuery.of(context).size.width,
                           bottom: 0,
-                          child: RestaurantInfo(
-                             )),
+                          child: RestaurantInfo()),
                     ],
                   ),
                 ),
                 SpaceUtils.ks20.height(),
+
+                //gallery loading image
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 024),
                   child: StaggeredGridView.countBuilder(
@@ -84,10 +133,11 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
                       mainAxisSpacing: 10,
                       crossAxisSpacing: 10,
                       crossAxisCount: 3,
-                      itemCount: itmes.length,
+                      itemCount: resturantglry.length,
                       itemBuilder: (context, int index) => StaggeredContainer(
-                            child: Image.asset(
-                              itmes[index].image,
+                            child: Image.network(
+                              "https://www.guildresto.com/uploads/restaurant/gallery/" +
+                                  resturantglry[index],
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -95,6 +145,7 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
                           (index % 10 == 0) ? 2 : 1,
                           (index % 10 == 0) ? 2 : 1)),
                 ),
+
                 SpaceUtils.ks16.height(),
                 // Padding(
                 //   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -120,10 +171,8 @@ class _RestaurantSettingState extends State<RestaurantSetting> {
 }
 
 class RestaurantInfo extends StatefulWidget {
-  
   const RestaurantInfo({
     Key? key,
-    
   }) : super(key: key);
 
   @override
@@ -131,7 +180,6 @@ class RestaurantInfo extends StatefulWidget {
 }
 
 class _RestaurantInfoState extends State<RestaurantInfo> {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -139,35 +187,39 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
     _fetchRestaurantData();
   }
 
-  var name ="";
-  var aboutresto ="";
-  var restoadddress ="";
-  var phoone ="";
+  var name = "";
+  var aboutresto = "";
+  var restoadddress = "";
+  var phoone = "";
 
-
-   Future<void> _fetchRestaurantData() async {
+  Future<void> _fetchRestaurantData() async {
     List<Map<String, dynamic>> resturant =
         await ResturantHelper.instance.getDetails();
     print("Data Received from the DB 2 $resturant");
 
     setState(() {
-      aboutresto =resturant[0]['aboutus'];
-      restoadddress =resturant[0]['address'];
-      phoone =resturant[0]['phone'];
+      aboutresto = resturant[0]['aboutus'];
+      restoadddress = resturant[0]['address'];
+      phoone = resturant[0]['phone'];
       name = resturant[0]['name'];
     });
-   }
+  }
 
+  void _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoone,
+    );
+    await launchUrl(launchUri);
+  }
 
-
-   
   @override
   Widget build(BuildContext context) {
     var isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(21),
       width: double.infinity,
-      height: 295,
+      height: 310,
       decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
@@ -191,23 +243,33 @@ class _RestaurantInfoState extends State<RestaurantInfo> {
 
         //const RestaurantStatus(),
         SpaceUtils.ks16.height(),
-        Text('Restaurant',
+        Text('Restaurant Address',
             style: FontStyleUtilities.t2(
                 context: context, fontWeight: FWT.semiBold)),
         const SizedBox(height: 4),
-        Text(
-          restoadddress,
-          textAlign: TextAlign.center,
+        SingleChildScrollView(
+          child: SizedBox(
+            height: 40,
+            child: Text(
+              restoadddress,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11),
+            ),
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 14),
         // Text('Expertise 1 . Expertise 2',
         //     style:
         //         FontStyleUtilities.t2(context: context, fontWeight: FWT.bold)),
         const Spacer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: const [
-            SimpleIconWrapper(name: 'Call', image: IconUtil.call),
+          children: [
+            GestureDetector(
+                onTap: () {
+                  _makePhoneCall;
+                },
+                child: SimpleIconWrapper(name: 'Call', image: IconUtil.call)),
             SimpleIconWrapper(name: 'Location', image: IconUtil.location),
             // SimpleIconWrapper(name: 'Opening', image: IconUtil.add)
           ],
