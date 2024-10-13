@@ -11,6 +11,9 @@ import 'package:resturant_side/src/presentation/widgets/customiconbutton.dart';
 import 'package:resturant_side/src/utils/iconutil.dart';
 import 'package:resturant_side/src/utils/navigationutil.dart';
 
+import '../../../../db/DatabaseHelper.dart';
+import '../../../../db/ResturantDB.dart';
+import '../../../api/service/api.dart';
 import '../../../theme/app_theme.dart';
 import 'freetable/freetable.dart';
 
@@ -44,6 +47,7 @@ class _TableMainState extends State<TableMain>
   @override
   void initState() {
     _TableMainController = TabController(length: 3, vsync: this);
+    _fetchRestaurantData();
     super.initState();
   }
 
@@ -62,6 +66,38 @@ class _TableMainState extends State<TableMain>
 
   int selectedtime = 0;
   int selextedTab = 0;
+  var totalorderplaced =0;
+  var totalordercancelled=0;
+  var totaldeliveredorder =0;
+  var totalactivecustomer=0;
+
+  RestaurantService _restaurantService = RestaurantService();
+
+  Future<void> _fetchRestaurantData() async {
+    List<Map<String, dynamic>> resturant =
+        await ResturantHelper.instance.getDetails();
+    print("Data Received from the DB 2 $resturant");
+
+    if (resturant != null) {
+      setState(() {
+        var id = resturant[0]['resid'];
+        _fetchTotalOrder(id);
+        _fetchCancelledOrder(id);
+        _fetchDeliveredOrder(id);
+        _fetchActiveCustomer();
+      });
+    } else {
+      print("No restaurant data received");
+    }
+  }
+
+  
+
+
+
+  
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +211,7 @@ class _TableMainState extends State<TableMain>
                       flex: 2,
                       child: Container(
                         child: Text(
-                          "0",
+                          totalorderplaced.toString(),
                           style: TextStyle(fontSize: 30),
                         ),
                       )),
@@ -277,7 +313,7 @@ class _TableMainState extends State<TableMain>
                       flex: 2,
                       child: Container(
                         child: Text(
-                          "0",
+                          totaldeliveredorder.toString(),
                           style: TextStyle(fontSize: 30),
                         ),
                       )),
@@ -328,7 +364,7 @@ class _TableMainState extends State<TableMain>
                       flex: 2,
                       child: Container(
                         child: Text(
-                          "0",
+                          totalordercancelled.toString(),
                           style: TextStyle(fontSize: 30),
                         ),
                       )),
@@ -379,7 +415,7 @@ class _TableMainState extends State<TableMain>
                       flex: 2,
                       child: Container(
                         child: Text(
-                          "0",
+                          "1",
                           style: TextStyle(fontSize: 30),
                         ),
                       )),
@@ -430,7 +466,7 @@ class _TableMainState extends State<TableMain>
                       flex: 2,
                       child: Container(
                         child: Text(
-                          "0",
+                          totalactivecustomer.toString(),
                           style: TextStyle(fontSize: 30),
                         ),
                       )),
@@ -481,7 +517,7 @@ class _TableMainState extends State<TableMain>
                       flex: 2,
                       child: Container(
                         child: Text(
-                          "0",
+                          "1",
                           style: TextStyle(fontSize: 30),
                         ),
                       )),
@@ -585,4 +621,55 @@ class _TableMainState extends State<TableMain>
       ),
     );
   }
+  
+  Future<void> _fetchTotalOrder(id) async {
+
+    final menuData = await _restaurantService.fetchtotalOrder(id);
+
+    setState(() {
+      totalorderplaced =menuData.length;
+    });
+    print(menuData.length);
+  }
+  
+  Future<void> _fetchCancelledOrder(id) async {
+    final menuData = await _restaurantService.fetchcancelledorder(id);
+    final filteredData = menuData.where((order) {
+        return order.length ==
+            26; // Only keep objects with exactly 26 key-value pairs
+      }).toList();
+
+    setState(() {
+      totalordercancelled =filteredData.length;
+    });
+    print(menuData.length);
+
+  }
+
+  //fetchdeliveredOrder
+  Future<void> _fetchDeliveredOrder(id) async {
+    final menuData = await _restaurantService.fetchdeliveredOrder(id);
+    final filteredData = menuData.where((order) {
+        return order.length ==
+            26; // Only keep objects with exactly 26 key-value pairs
+      }).toList();
+
+    setState(() {
+      totaldeliveredorder =filteredData.length;
+    });
+    print(menuData.length);
+
+  }
+
+  //fetchActive Customer
+  Future<void> _fetchActiveCustomer() async {
+    final menuData = await _restaurantService.fetchactivecustomer();
+   
+    setState(() {
+      totalactivecustomer =menuData.length;
+    });
+    print(menuData.length);
+
+  }
+
 }

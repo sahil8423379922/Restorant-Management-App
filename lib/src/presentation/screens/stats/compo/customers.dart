@@ -4,10 +4,47 @@ import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/widgets/commonshadowcontainer.dart';
 
-class Customers extends StatelessWidget {
+import '../../../../../db/ResturantDB.dart';
+import '../../../../api/service/api.dart';
+
+class Customers extends StatefulWidget {
   const Customers({
     Key? key,
   }) : super(key: key);
+
+  @override
+  State<Customers> createState() => _CustomersState();
+}
+
+class _CustomersState extends State<Customers> {
+
+
+RestaurantService _restaurantService = RestaurantService();
+
+  var totalactivecustomer =0;
+
+
+  Future<void> _fetchRestaurantData() async {
+    List<Map<String, dynamic>> resturant =
+        await ResturantHelper.instance.getDetails();
+    print("Data Received from the DB 2 $resturant");
+
+    if (resturant != null) {
+      setState(() {
+        var id = resturant[0]['resid'];
+        _fetchActiveCustomer();
+      });
+    } else {
+      print("No restaurant data received");
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchRestaurantData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +76,7 @@ class Customers extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        '45',
+                        totalactivecustomer.toString(),
                         style: FontStyleUtilities.h3(
                           fontWeight: FWT.bold,
                           context: context,
@@ -56,7 +93,7 @@ class Customers extends StatelessWidget {
                           ),
                           5.0.width(),
                           Text(
-                            'New',
+                            'Active',
                             style: FontStyleUtilities.t2(
                               fontWeight: FWT.semiBold,
                               context: context,
@@ -67,36 +104,38 @@ class Customers extends StatelessWidget {
                     ],
                   ),
                   SpaceUtils.ks10.width(),
-                  Column(
-                    children: [
-                      Text(
-                        '15',
-                        style: FontStyleUtilities.h3(
-                          fontWeight: FWT.bold,
-                          context: context,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            height: 9,
-                            width: 9,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(1.5),
-                                color: ColorUtils.kcLightRed),
-                          ),
-                          5.0.width(),
-                          Text(
-                            'Repeat',
-                            style: FontStyleUtilities.t2(
-                              fontWeight: FWT.semiBold,
-                              context: context,
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
+                  // Column(
+                  //   children: [
+                  //     Text(
+                  //       '15',
+                  //       style: FontStyleUtilities.h3(
+                  //         fontWeight: FWT.bold,
+                  //         context: context,
+                  //       ),
+                  //     ),
+                  //     Row(
+                  //       children: [
+                  //         Container(
+                  //           height: 9,
+                  //           width: 9,
+                  //           decoration: BoxDecoration(
+                  //               borderRadius: BorderRadius.circular(1.5),
+                  //               color: ColorUtils.kcLightRed),
+                  //         ),
+                  //         5.0.width(),
+                  //         Text(
+                  //           'Repeat',
+                  //           style: FontStyleUtilities.t2(
+                  //             fontWeight: FWT.semiBold,
+                  //             context: context,
+                  //           ),
+                  //         )
+                  //       ],
+                  //     )
+                  //   ],
+                  // ),
+               
+               
                 ],
               )
             ],
@@ -118,7 +157,7 @@ class Customers extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '60',
+                        totalactivecustomer.toString(),
                         style: FontStyleUtilities.h3(
                           fontColor: ColorUtils.kcPrimary,
                           fontWeight: FWT.bold,
@@ -149,5 +188,16 @@ class Customers extends StatelessWidget {
         ],
       ),
     );
+  }
+
+   //fetchActive Customer
+  Future<void> _fetchActiveCustomer() async {
+    final menuData = await _restaurantService.fetchactivecustomer();
+   
+    setState(() {
+      totalactivecustomer =menuData.length;
+    });
+    print(menuData.length);
+
   }
 }

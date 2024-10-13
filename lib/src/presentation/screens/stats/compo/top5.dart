@@ -44,73 +44,76 @@ class _Top5State extends State<Top5> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
      var isDark = Theme.of(context).brightness == Brightness.dark;
-    return CommonShadowContainer(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        margin: const EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 0,
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(
-            'Top 5',
-            style: FontStyleUtilities.t1(context: context,
-              fontWeight: FWT.bold,
-            ),
-          ),
-          SpaceUtils.ks10.height(),
-          TabBar(
-            onTap: (index) {
-              onTap(index);
-            },
-            indicatorWeight: 3,
-            labelStyle: const TextStyle(
-              fontFamily: 'Sands',
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontFamily: 'Sands',
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-            unselectedLabelColor:  isDark ? ColorUtils.kcWhite : ColorUtils.kcBlueButton,
-            labelPadding: const EdgeInsets.only(bottom: 10),
-            labelColor: ColorUtils.kcPrimary,
-            tabs: const [
-              Tab(
-                iconMargin: EdgeInsets.zero,
-                height: 20,
-                text: 'Top 5 Dishes',
-              ),
-              Tab(
-                  iconMargin: EdgeInsets.zero,
-                  height: 20,
-                  text: "Top 5 Customers")
-            ],
-            controller: _tabController,
-          ),
-          SpaceUtils.ks16.height(),
-          selectedIndex == 0
-              ? ListView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, i) => TopText(
-                    dishes: dishes,
-                    index: i,
-                  ),
-                  itemCount: dishes.length,
-                  shrinkWrap: true,
-                )
-              : ListView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, i) => TopText(
-                    dishes: customers,
-                    index: i,
-                  ),
-                  itemCount: customers.length,
-                  shrinkWrap: true,
-                )
-        ]));
+    return SizedBox();
+    // CommonShadowContainer(
+    //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    //     margin: const EdgeInsets.only(
+    //       left: 24,
+    //       right: 24,
+    //       top: 0,
+    //     ),
+    //     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    //       Text(
+    //         'Top 5',
+    //         style: FontStyleUtilities.t1(context: context,
+    //           fontWeight: FWT.bold,
+    //         ),
+    //       ),
+    //       SpaceUtils.ks10.height(),
+    //       TabBar(
+    //         onTap: (index) {
+    //           onTap(index);
+    //         },
+    //         indicatorWeight: 3,
+    //         labelStyle: const TextStyle(
+    //           fontFamily: 'Sands',
+    //           fontWeight: FontWeight.w600,
+    //           fontSize: 13,
+    //         ),
+    //         unselectedLabelStyle: const TextStyle(
+    //           fontFamily: 'Sands',
+    //           fontWeight: FontWeight.w600,
+    //           fontSize: 13,
+    //         ),
+    //         unselectedLabelColor:  isDark ? ColorUtils.kcWhite : ColorUtils.kcBlueButton,
+    //         labelPadding: const EdgeInsets.only(bottom: 10),
+    //         labelColor: ColorUtils.kcPrimary,
+    //         tabs: const [
+    //           Tab(
+    //             iconMargin: EdgeInsets.zero,
+    //             height: 20,
+    //             text: 'Top 5 Dishes',
+    //           ),
+    //           Tab(
+    //               iconMargin: EdgeInsets.zero,
+    //               height: 20,
+    //               text: "Top 5 Customers")
+    //         ],
+    //         controller: _tabController,
+    //       ),
+    //       SpaceUtils.ks16.height(),
+    //       selectedIndex == 0
+    //           ? ListView.builder(
+    //               physics: const NeverScrollableScrollPhysics(),
+    //               itemBuilder: (context, i) => TopText(
+    //                 dishes: dishes,
+    //                 index: i,
+    //               ),
+    //               itemCount: dishes.length,
+    //               shrinkWrap: true,
+    //             )
+    //           : ListView.builder(
+    //               physics: const NeverScrollableScrollPhysics(),
+    //               itemBuilder: (context, i) => TopText(
+    //                 dishes: customers,
+    //                 index: i,
+    //               ),
+    //               itemCount: customers.length,
+    //               shrinkWrap: true,
+    //             )
+    //     ]));
+ 
+ 
   }
 }
 

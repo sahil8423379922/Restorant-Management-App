@@ -38,7 +38,7 @@ class _StatsState extends State<Stats> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Stats',
+              'Report',
               style:
                   FontStyleUtilities.h4(fontWeight: FWT.bold, context: context),
             ),

@@ -12,9 +12,13 @@ class RestaurantService {
   final String apiPendingOrderUri = "https://www.guildresto.com/api/orderinfo";
   final String apiMenuDetailsUri = "https://www.guildresto.com/api/menudetails";
   final String apiApprovedOrderUri = "https://www.guildresto.com/api/approved";
-  final String apiOrderDetailsUri =
-      "https://www.guildresto.com/api/orderdetails";
+  final String apiOrderDetailsUri ="https://www.guildresto.com/api/orderdetails";
   final String apichangeStatus = "https://www.guildresto.com/api/process";
+  final String totalorder ="https://www.guildresto.com/api/totalorder";
+  final String canceledorder="https://www.guildresto.com/api/canceled";
+  final String orderdeliverd ="https://www.guildresto.com/api/delivered";
+  final String activecustomer ="https://www.guildresto.com/api/customer";
+  final String ownerpay ="https://www.guildresto.com/api/pay";
 
   // Generic API call function
   Future<dynamic> _apiCall(String uri, Map<String, dynamic> requestBody) async {
@@ -35,7 +39,43 @@ class RestaurantService {
       print("Error during API call: $error");
       return null;
     }
+  
   }
+
+
+  //fetch owner pay
+  Future<dynamic> fetchownerpay(String id) async {
+    final Map<String, dynamic> requestBody = {"resid":id};
+    return await _apiCall(ownerpay, requestBody);
+  }
+
+  //fetch delivery order
+  Future<dynamic> fetchactivecustomer() async {
+    final Map<String, dynamic> requestBody = {};
+    return await _apiCall(activecustomer, requestBody);
+  }
+
+  //fetch delivery order
+  Future<dynamic> fetchdeliveredOrder(String id) async {
+    final Map<String, dynamic> requestBody = {"resid": id};
+    print("Received ID: $id");
+    return await _apiCall(orderdeliverd, requestBody);
+  }
+ 
+  //fetch total order
+  Future<dynamic> fetchtotalOrder(String id) async {
+    final Map<String, dynamic> requestBody = {"resid": id};
+    print("Received ID: $id");
+    return await _apiCall(totalorder, requestBody);
+  }
+
+  //fetch cancelled order
+  Future<dynamic> fetchcancelledorder(String id) async {
+    final Map<String, dynamic> requestBody = {"resid": id};
+    print("Received ID: $id");
+    return await _apiCall(canceledorder, requestBody);
+  }
+
 
   // Fetch restaurant details
   Future<dynamic> fetchRestaurant(String id) async {
@@ -61,6 +101,7 @@ class RestaurantService {
     print("Received ID: $id");
     return await _apiCall(apiMenuUri, requestBody);
   }
+
 
   // Fetch restaurant menu data
   Future<List<dynamic>?> fetchRestaurantMenuData(String resId) async {

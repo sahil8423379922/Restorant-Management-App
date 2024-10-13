@@ -4,6 +4,10 @@ import 'package:resturant_side/src/presentation/constatns/colors.dart';
 import 'package:resturant_side/src/presentation/constatns/exporter.dart';
 import 'package:resturant_side/src/presentation/widgets/commonshadowcontainer.dart';
 
+import '../../../../../db/ResturantDB.dart';
+import '../../../../api/service/api.dart';
+import 'package:intl/intl.dart';
+
 class MyBarChartData extends StatefulWidget {
   const MyBarChartData({
     Key? key,
@@ -22,9 +26,87 @@ class _MyBarChartDataState extends State<MyBarChartData>
         vsync: this, duration: const Duration(milliseconds: 1000));
     _controller.forward();
     super.initState();
+    _fetchRestaurantData() ;
   }
 
-  List<double> dataY = [6, 7, 5, 4, 9, 11, 8, 5, .75, .75, .75, .75];
+  RestaurantService _restaurantService = RestaurantService();
+  List<double> dataY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  int maxy=0;
+  int totalamt =0;
+
+  Future<void> _fetchRestaurantData() async {
+    List<Map<String, dynamic>> resturant =
+        await ResturantHelper.instance.getDetails();
+    print("Data Received from the DB 2 $resturant");
+
+    if (resturant != null) {
+      setState(() {
+        var id = resturant[0]['resid'];
+        fetchownerpay(id);
+       
+      });
+    } else {
+      print("No restaurant data received");
+    }
+  }
+
+  Future<void> fetchownerpay(id) async {
+    final pay = await _restaurantService.fetchownerpay(id);
+    print("Information about the owner pay");
+    print(pay);
+    List<dynamic> formattedOrders = pay.map((order) {
+    DateTime dateAdded = DateTime.fromMillisecondsSinceEpoch(int.parse(order['date_added']) * 1000);
+    String formattedDate = "${dateAdded.year}-${dateAdded.month.toString().padLeft(2, '0')}-${dateAdded.day.toString().padLeft(2, '0')} ${dateAdded.hour.toString().padLeft(2, '0')}:${dateAdded.minute.toString().padLeft(2, '0')}:${dateAdded.second.toString().padLeft(2, '0')}";
+    formattedDate = DateFormat('dd-MM-yy').format(dateAdded);
+    return {
+      'id': order['id'],
+      'order_code': order['order_code'],
+      'total_bill': order['total_bill'],
+      'admin_commission': order['admin_commission'],
+      'owner_commission': order['owner_commission'],
+      'date_added': formattedDate,
+      'restaurant_id': order['restaurant_id'],
+    };
+  }).toList();
+
+  // Print formatted orders
+  formattedOrders.forEach((order) {
+  int ownerCommission =int.parse( order['owner_commission']);
+  String dateAdded = order['date_added'];
+  int month = DateFormat('dd-MM-yy').parse(dateAdded).month;
+  setState(() {
+    totalamt =totalamt +ownerCommission;
+    dataY[month - 1] =dataY[month - 1]+ ownerCommission.toDouble();
+  });
+  print("Value of month received ="+month.toString());
+  print(dateAdded);
+  print(dataY);
+
+  
+  
+  });
+
+  dataY.forEach((element) {
+    
+    int c = element.toInt();
+
+    if(maxy<c){
+      setState(() {
+        maxy=c;
+      });
+      
+    }
+
+
+  });
+
+  print("Maximum range of y is "+maxy.toString());
+
+
+
+  }
+
+  
   List<String> names = [
     'Jan',
     'Feb',
@@ -66,7 +148,7 @@ class _MyBarChartDataState extends State<MyBarChartData>
                     ),
                     borderData: FlBorderData(show: false),
                     gridData: FlGridData(show: false),
-                    maxY: 15,
+                    maxY: maxy.toDouble(),
                     minY: 0,
                     barGroups: [
                       ...dataY
@@ -119,7 +201,7 @@ class _MyBarChartDataState extends State<MyBarChartData>
                 context: context),
           ),
           Text(
-            'INR 35000',
+            "CAD "+totalamt.toString(),
             style: FontStyleUtilities.h2(
                 context: context,
                 fontWeight: FWT.bold,
